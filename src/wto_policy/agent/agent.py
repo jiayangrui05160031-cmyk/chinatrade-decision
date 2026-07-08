@@ -16,7 +16,6 @@ from dataclasses import dataclass, field
 from wto_policy.agent.llm_client import LlmClient, LlmMessage
 from wto_policy.agent.tools import call_tool, get_tool_schemas
 
-
 SYSTEM_PROMPT = """你是 **WTO 跨境政策决策助手**, 服务于中国制造业出口企业.
 
 你的能力:
@@ -85,7 +84,7 @@ class Agent:
         tool_calls: list[str] = []
         final = ""
 
-        for step in range(self.max_steps):
+        for _step in range(self.max_steps):
             resp = self.llm.chat(messages, tools=self.tools, tool_choice="auto")
             choice = resp["choices"][0]
             msg = choice["message"]

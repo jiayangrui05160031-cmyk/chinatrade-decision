@@ -15,13 +15,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from wto_policy.agent.policy_fetcher import search_policy, to_dict as policy_to_dict
+from wto_policy.agent.policy_fetcher import search_policy
+from wto_policy.agent.policy_fetcher import to_dict as policy_to_dict
 from wto_policy.core.company_profile import CompanyProfile, TradeMode
 from wto_policy.core.decision_card import DecisionCard
 from wto_policy.core.hs_resolver import HsResolver
 from wto_policy.core.tariff_lookup import TariffLookup
 from wto_policy.data.seed import load_sample, load_us_tariff_seed
-
 
 # ============ Tool 1: HS 编码搜索 ============
 
@@ -102,12 +102,12 @@ def lookup_tariff(
         "effective_rate": bd.effective_rate,
         "lines": [
             {
-                "type": l.measure_type.value,
-                "rate": l.rate,
-                "amount": l.duty_amount,
-                "legal_basis": l.legal_basis,
+                "type": line.measure_type.value,
+                "rate": line.rate,
+                "amount": line.duty_amount,
+                "legal_basis": line.legal_basis,
             }
-            for l in bd.breakdown.lines
+            for line in bd.breakdown.lines
         ],
     }
 
@@ -189,7 +189,7 @@ def call_tool(name: str, arguments: dict[str, Any]) -> str:
     try:
         result = _TOOL_REGISTRY[name].handler(**arguments)
         return json.dumps(result, ensure_ascii=False)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         return json.dumps({"error": f"{type(e).__name__}: {e}"})
 
 
@@ -284,10 +284,10 @@ _TOOL_REGISTRY: dict[str, ToolDef] = {
 
 __all__ = [
     "ToolDef",
-    "get_tool_schemas",
     "call_tool",
-    "search_hs_codes",
-    "lookup_tariff",
     "generate_decision_card",
+    "get_tool_schemas",
+    "lookup_tariff",
+    "search_hs_codes",
     "search_recent_policy",
 ]

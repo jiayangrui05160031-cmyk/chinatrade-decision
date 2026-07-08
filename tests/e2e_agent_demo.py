@@ -8,14 +8,14 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
 from dotenv import load_dotenv
 
+# 先 load env, 再 import wto_policy.agent (后者会读 env)
 load_dotenv()
 
-from wto_policy.agent.agent import Agent
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
+from wto_policy.agent.agent import Agent  # noqa: E402
 
 SCENARIOS = [
     (
@@ -48,7 +48,7 @@ def main() -> None:
 
     agent = Agent(max_steps=5)
 
-    for i, (title, user_msg) in enumerate(SCENARIOS, 1):
+    for title, user_msg in SCENARIOS:
         print(f"\n{'─' * 70}")
         print(f"{title}")
         print(f"  用户: {user_msg}")

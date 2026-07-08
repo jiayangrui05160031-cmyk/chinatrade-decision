@@ -9,12 +9,10 @@
 
 from __future__ import annotations
 
-import json
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from email.utils import parsedate_to_datetime
-from pathlib import Path
 
 import httpx
 
@@ -35,7 +33,7 @@ def _parse_rss_date(s: str) -> datetime:
     """RSS pubDate -> datetime."""
     try:
         return parsedate_to_datetime(s).astimezone(UTC)
-    except Exception:  # noqa: BLE001
+    except Exception:
         return datetime.now(UTC)
 
 
@@ -61,7 +59,7 @@ def fetch_ustr_press(*, limit: int = 10, timeout: float = 15.0) -> list[PolicyIt
                 source="ustr.gov", summary=desc,
             ))
         return items
-    except Exception:  # noqa: BLE001
+    except Exception:
         return []
 
 
@@ -100,7 +98,7 @@ def fetch_federal_register(
                 summary=doc.get("abstract", "")[:500] or None,
             ))
         return items
-    except Exception:  # noqa: BLE001
+    except Exception:
         return []
 
 
@@ -126,7 +124,7 @@ def fetch_mofcom_rss(*, limit: int = 10, timeout: float = 15.0) -> list[PolicyIt
                 source="mofcom.gov.cn", summary=desc,
             ))
         return items
-    except Exception:  # noqa: BLE001
+    except Exception:
         return []
 
 
@@ -174,9 +172,9 @@ def to_dict(items: list[PolicyItem]) -> list[dict]:
 
 __all__ = [
     "PolicyItem",
-    "fetch_ustr_press",
     "fetch_federal_register",
     "fetch_mofcom_rss",
+    "fetch_ustr_press",
     "search_policy",
     "to_dict",
 ]

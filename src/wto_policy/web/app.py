@@ -15,7 +15,6 @@ from __future__ import annotations
 import streamlit as st
 
 from wto_policy.agent.agent import Agent, AgentRun
-from wto_policy.agent.llm_client import LlmClient
 
 
 def _init_state() -> None:
@@ -34,10 +33,11 @@ def _render_turn(turn) -> None:  # type: ignore[no-untyped-def]
         with st.chat_message("assistant"):
             st.markdown(turn.content)
     elif turn.role == "tool_call":
-        with st.chat_message("assistant"):
-            with st.status(f"🔧 调用 {turn.tool_name}", expanded=False) as s:
-                st.json(turn.tool_args or {})
-                s.update(label=f"🔧 {turn.tool_name} 完成")
+        with st.chat_message("assistant"), st.status(
+            f"🔧 调用 {turn.tool_name}", expanded=False
+        ) as s:
+            st.json(turn.tool_args or {})
+            s.update(label=f"🔧 {turn.tool_name} 完成")
     elif turn.role == "tool_result":
         # 不单独显示 (在 status 里)
         pass
@@ -101,13 +101,12 @@ def main() -> None:
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        with st.chat_message("assistant"):
-            with st.spinner("Agent 思考中..."):
-                run = st.session_state.agent.run(prompt)
-                st.session_state.last_run = run
-                # 渲染过程
-                for t in run.turns:
-                    _render_turn(t)
+        with st.chat_message("assistant"), st.spinner("Agent 思考中..."):
+            run = st.session_state.agent.run(prompt)
+            st.session_state.last_run = run
+            # 渲染过程
+            for t in run.turns:
+                _render_turn(t)
         st.session_state.messages.append({
             "role": "assistant", "content": run.final_message,
         })

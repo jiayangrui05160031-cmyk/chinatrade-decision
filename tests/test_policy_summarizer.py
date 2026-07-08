@@ -21,7 +21,6 @@ def test_prompt_construction(monkeypatch: pytest.MonkeyPatch) -> None:
             captured.append(messages)
             return "对华 Section 301 List 4A 7.5%"
 
-    from wto_policy.agent import policy_summarizer as mod
     out = summarize(
         "USTR modifies Section 301 List 4A duty rate to 7.5% effective Feb 2026",
         llm=FakeLlm(),  # type: ignore[arg-type]

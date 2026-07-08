@@ -5,12 +5,11 @@ MiniMax API 兼容 OpenAI Chat Completions 协议, 同时原生支持 function c
 
 from __future__ import annotations
 
-import json
 import os
 from typing import Any, Literal
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 DEFAULT_BASE = "https://api.minimaxi.com/v1"
 DEFAULT_MODEL = "MiniMax-Text-01"
