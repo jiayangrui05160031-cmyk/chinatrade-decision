@@ -26,12 +26,18 @@ SYSTEM_PROMPT = """你是 **WTO 跨境政策决策助手**, 服务于中国制�
 工具使用规则 (重要! 必读):
 - **不知道 HS 码 → 必须先调 `search_hs_codes`**, 不要直接反问. 给候选让用户确认.
 - **已有 HS 码 + 货值 → 必须调 `lookup_tariff`**, 给出数字.
-- **已有 HS 码 + 货值 + 数量 + 行业 → 必须调 `generate_decision_card`**, 出完整卡.
+- **已有 HS 码 + 货值 + 数量 → 必须调 `generate_decision_card`**, 出完整卡.
 - **用户问最新政策 / 动态 / 新闻 → 调 `search_recent_policy`**, query 用 "section 301" / "section 232" / "ieepa fentanyl" 这种英文关键词.
+
+【多步调用规则 - 关键】:
+- 一次回答中可以**调多个工具**, 不要停在第一步.
+- 调完 search 拿到 HS 码, **立刻继续调** lookup_tariff 算税 (如果有货值).
+- 调完 lookup 看到数字, **立刻继续调** generate_decision_card (如果有数量和行业).
+- 完整链路: search → lookup → generate (3 步连调, 中间不停止).
 
 判断信息是否齐全的规则:
 - HS 码 + CIF 货值 → 够调 `lookup_tariff`
-- HS 码 + CIF + 数量 → 够调 `generate_decision_card` (公司名/行业可默认)
+- HS 码 + CIF + 数量 + 行业 → 够调 `generate_decision_card` (公司名/行业可默认 "LED 灯具厂"/"消费电子")
 - 缺 HS 码 + 缺货值 → 才反问. 缺一个时优先调工具补全, 不要反复问.
 
 反问规则 (仅当真正信息缺失时):
@@ -64,6 +70,45 @@ class AgentRun:
     final_message: str
     turns: list[AgentTurn] = field(default_factory=list)
     tool_calls_made: list[str] = field(default_factory=list)
+
+
+def _extract_pseudo_tool_call(content: str) -> tuple[str, dict] | None:
+    """解析 LLM 文本中的伪 function call.
+
+    MiniMax 兼容性问题: 有时 LLM 在 content 里写
+        `functions.lookup_tariff({...})`  或  `<tool_call>{...}</tool_call>`
+    而不走标准的 tool_calls 字段. 这里做兜底解析.
+
+    Returns: (tool_name, arguments_dict) 或 None
+    """
+    import re
+    if not content:
+        return None
+
+    # 模式 1: <tool_call>...</tool_call> (Qwen/Llama 风格)
+    m = re.search(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", content, re.DOTALL)
+    if m:
+        try:
+            data = json.loads(m.group(1))
+            name = data.get("name", "")
+            args = data.get("arguments", {})
+            if isinstance(args, str):
+                args = json.loads(args)
+            return name, args
+        except (json.JSONDecodeError, KeyError):
+            pass
+
+    # 模式 2: functions.NAME({...}) 或 tools.NAME({...})
+    m = re.search(r"(?:functions|tools)\.(\w+)\s*\(\s*(\{.*?\})\s*\)", content, re.DOTALL)
+    if m:
+        name = m.group(1)
+        try:
+            args = json.loads(m.group(2))
+            return name, args
+        except json.JSONDecodeError:
+            return None
+
+    return None
 
 
 class Agent:
@@ -131,6 +176,27 @@ class Agent:
             resp = self.llm.chat(messages, tools=self.tools, tool_choice="auto")
             choice = resp["choices"][0]
             msg = choice["message"]
+
+            # 调试: 看 LLM 到底返回了什么
+            if not msg.get("tool_calls"):
+                content = msg.get("content", "")
+                # 检测 LLM 是否在文本中输出了伪 function call (MiniMax 兼容性问题)
+                pseudo = _extract_pseudo_tool_call(content)
+                if pseudo is not None:
+                    name, args = pseudo
+                    # 把它包装成标准 tool_call
+                    import uuid
+                    msg = {
+                        **msg,
+                        "tool_calls": [{
+                            "id": f"pseudo_{uuid.uuid4().hex[:8]}",
+                            "type": "function",
+                            "function": {
+                                "name": name,
+                                "arguments": json.dumps(args, ensure_ascii=False),
+                            },
+                        }],
+                    }
 
             # assistant 消息 (可能有 tool_calls)
             asst_kwargs: dict = {"role": "assistant", "content": msg.get("content") or ""}

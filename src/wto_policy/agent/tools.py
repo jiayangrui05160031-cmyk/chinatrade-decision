@@ -240,9 +240,10 @@ _TOOL_REGISTRY: dict[str, ToolDef] = {
     "search_hs_codes": ToolDef(
         name="search_hs_codes",
         description=(
-            "按产品描述搜索 HS 编码候选. 输入中文或英文产品名/描述, "
+            "【最高优先级】按产品描述搜索 HS 编码候选. "
+            "即使信息不全 (没有货值/数量), **只要产品描述就调此工具**. "
             "返回匹配的 HS 编码列表 (6/8/10 位) 及中英文说明. "
-            "当用户用自然语言描述产品但不直接给 HS 码时, 调此工具."
+            "用户用自然语言描述产品 (例 '蓝牙耳机' / 'led lamp' / '钢管' / '塑料玩具') 时, 必调."
         ),
         parameters={
             "type": "object",

@@ -1,0 +1,363 @@
+{
+  "tariff_accuracy": {
+    "name": "tariff_accuracy",
+    "passed": 4,
+    "total": 4,
+    "rate": "4/4",
+    "details": [
+      {
+        "scenario": "LED 灯具 (9405408000)",
+        "hs_code": "9405408000",
+        "all_ok": true,
+        "details": {
+          "mfn": {
+            "expected": 0.034,
+            "actual": 0.033999999999999996,
+            "delta": 6.938893903907228e-18,
+            "ok": true
+          },
+          "section_301": {
+            "expected": 0.075,
+            "actual": 0.075,
+            "delta": 0.0,
+            "ok": true
+          },
+          "section_232": {
+            "expected": 0.0,
+            "actual": 0.0,
+            "delta": 0.0,
+            "ok": true
+          },
+          "ieepa": {
+            "expected": 0.1,
+            "actual": 0.1,
+            "delta": 0.0,
+            "ok": true
+          },
+          "effective": {
+            "expected": 0.209,
+            "actual": 0.209,
+            "delta": 0.0,
+            "ok": true
+          }
+        }
+      },
+      {
+        "scenario": "蓝牙耳机 (8518302000)",
+        "hs_code": "8518302000",
+        "all_ok": true,
+        "details": {
+          "mfn": {
+            "expected": 0.0,
+            "actual": 0.0,
+            "delta": 0.0,
+            "ok": true
+          },
+          "section_301": {
+            "expected": 0.075,
+            "actual": 0.075,
+            "delta": 0.0,
+            "ok": true
+          },
+          "section_232": {
+            "expected": 0.0,
+            "actual": 0.0,
+            "delta": 0.0,
+            "ok": true
+          },
+          "ieepa": {
+            "expected": 0.1,
+            "actual": 0.1,
+            "delta": 0.0,
+            "ok": true
+          },
+          "effective": {
+            "expected": 0.175,
+            "actual": 0.175,
+            "delta": 0.0,
+            "ok": true
+          }
+        }
+      },
+      {
+        "scenario": "玩具 (9503000000)",
+        "hs_code": "9503000000",
+        "all_ok": true,
+        "details": {
+          "mfn": {
+            "expected": 0.0,
+            "actual": 0.0,
+            "delta": 0.0,
+            "ok": true
+          },
+          "section_301": {
+            "expected": 0.25,
+            "actual": 0.25,
+            "delta": 0.0,
+            "ok": true
+          },
+          "section_232": {
+            "expected": 0.0,
+            "actual": 0.0,
+            "delta": 0.0,
+            "ok": true
+          },
+          "ieepa": {
+            "expected": 0.1,
+            "actual": 0.1,
+            "delta": 0.0,
+            "ok": true
+          },
+          "effective": {
+            "expected": 0.35,
+            "actual": 0.35,
+            "delta": 0.0,
+            "ok": true
+          }
+        }
+      },
+      {
+        "scenario": "钢 (720800)",
+        "hs_code": "720800",
+        "all_ok": true,
+        "details": {
+          "mfn": {
+            "expected": 0.0,
+            "actual": 0.0,
+            "delta": 0.0,
+            "ok": true
+          },
+          "section_301": {
+            "expected": 0.0,
+            "actual": 0.0,
+            "delta": 0.0,
+            "ok": true
+          },
+          "section_232": {
+            "expected": 0.25,
+            "actual": 0.25,
+            "delta": 0.0,
+            "ok": true
+          },
+          "ieepa": {
+            "expected": 0.1,
+            "actual": 0.1,
+            "delta": 0.0,
+            "ok": true
+          },
+          "effective": {
+            "expected": 0.35,
+            "actual": 0.35,
+            "delta": 0.0,
+            "ok": true
+          }
+        }
+      }
+    ]
+  },
+  "query_relevance": {
+    "name": "query_relevance",
+    "passed": 7,
+    "total": 7,
+    "rate": "7/7"
+  },
+  "decision_card_consistency": {
+    "name": "decision_card_consistency",
+    "passed": 1,
+    "total": 1,
+    "rate": "1/1",
+    "values": [
+      [
+        3594.8,
+        0.209,
+        3.5948
+      ],
+      [
+        3594.8,
+        0.209,
+        3.5948
+      ],
+      [
+        3594.8,
+        0.209,
+        3.5948
+      ]
+    ]
+  },
+  "agent_accuracy": {
+    "name": "agent_accuracy",
+    "overall": 0.756,
+    "by_difficulty": {
+      "easy": 0.938,
+      "medium": 0.528,
+      "hard": 0.667
+    },
+    "details": [
+      {
+        "q": "HS 9405408000 货值 17200 出口美国关税",
+        "difficulty": "easy",
+        "expected": [
+          "lookup_tariff"
+        ],
+        "actual": [
+          "lookup_tariff"
+        ],
+        "score": 1.0
+      },
+      {
+        "q": "HS 8518302000 蓝牙耳机 25 美金一个 100 个",
+        "difficulty": "easy",
+        "expected": [
+          "lookup_tariff",
+          "generate_decision_card"
+        ],
+        "actual": [
+          "lookup_tariff"
+        ],
+        "score": 0.5
+      },
+      {
+        "q": "蓝牙耳机出口美国多少钱",
+        "difficulty": "medium",
+        "expected": [
+          "search_hs_codes"
+        ],
+        "actual": [
+          "search_hs_codes",
+          "lookup_tariff"
+        ],
+        "score": 1.0
+      },
+      {
+        "q": "我是 LED 灯具厂 1000 个出口美国 5 万美金 接不接",
+        "difficulty": "medium",
+        "expected": [
+          "search_hs_codes",
+          "lookup_tariff",
+          "generate_decision_card"
+        ],
+        "actual": [
+          "search_hs_codes",
+          "lookup_tariff"
+        ],
+        "score": 0.6666666666666666
+      },
+      {
+        "q": "中国出口到美国的玩具关税",
+        "difficulty": "medium",
+        "expected": [
+          "search_hs_codes",
+          "lookup_tariff"
+        ],
+        "actual": [],
+        "score": 0.0
+      },
+      {
+        "q": "最近 Section 301 有什么新动作",
+        "difficulty": "easy",
+        "expected": [
+          "search_recent_policy"
+        ],
+        "actual": [
+          "search_recent_policy"
+        ],
+        "score": 1.0
+      },
+      {
+        "q": "Section 232 钢铝现在多少",
+        "difficulty": "easy",
+        "expected": [
+          "search_recent_policy"
+        ],
+        "actual": [
+          "search_recent_policy"
+        ],
+        "score": 1.0
+      },
+      {
+        "q": "我是义乌小电商 蓝牙耳机 25 美金一个 100 个 快递",
+        "difficulty": "medium",
+        "expected": [
+          "lookup_tariff",
+          "generate_decision_card"
+        ],
+        "actual": [
+          "search_hs_codes",
+          "lookup_tariff"
+        ],
+        "score": 0.5
+      },
+      {
+        "q": "我要走小包直邮到美国",
+        "difficulty": "easy",
+        "expected": [],
+        "actual": [],
+        "score": 1.0
+      },
+      {
+        "q": "河北钢管厂 HS 720800 50 万美元 走海运",
+        "difficulty": "medium",
+        "expected": [
+          "lookup_tariff",
+          "generate_decision_card"
+        ],
+        "actual": [
+          "lookup_tariff"
+        ],
+        "score": 0.5
+      },
+      {
+        "q": "HS 940540 货值 1 万 出口美国",
+        "difficulty": "easy",
+        "expected": [
+          "lookup_tariff"
+        ],
+        "actual": [
+          "lookup_tariff"
+        ],
+        "score": 1.0
+      },
+      {
+        "q": "我出口到美国 一单多少钱",
+        "difficulty": "easy",
+        "expected": [],
+        "actual": [],
+        "score": 1.0
+      },
+      {
+        "q": "我要发货到美国 多少钱",
+        "difficulty": "easy",
+        "expected": [],
+        "actual": [],
+        "score": 1.0
+      },
+      {
+        "q": "我是中山灯具厂 5000 个台灯 出口美国 80 万美金",
+        "difficulty": "hard",
+        "expected": [
+          "search_hs_codes",
+          "lookup_tariff",
+          "generate_decision_card"
+        ],
+        "actual": [
+          "search_hs_codes",
+          "lookup_tariff"
+        ],
+        "score": 0.6666666666666666
+      },
+      {
+        "q": "求推荐: 我做塑料玩具 出口美国 怎么算关税",
+        "difficulty": "medium",
+        "expected": [
+          "search_hs_codes",
+          "lookup_tariff"
+        ],
+        "actual": [
+          "search_hs_codes"
+        ],
+        "score": 0.5
+      }
+    ]
+  },
+  "overall_score": 0.9024
+}
