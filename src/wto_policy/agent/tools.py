@@ -55,35 +55,48 @@ def search_hs_codes(
 
 
 # ============ Tool 2: 关税计算 ============
-
 def lookup_tariff(
     hs_code: str,
     cif_value_usd: float,
     *,
     origin: str = "CN",
     destination: str = "US",
-    lookup: TariffLookup | None = None,
 ) -> dict[str, Any]:
     """Agent 工具: 查某 HS 码的关税.
 
-    返回结构:
-    {
-        "mfn": 0.034, "section_301": 0.075, "section_232": 0.0, "ieepa": 0.10,
-        "total_rate": 0.209, "amount_usd": {mfn, s301, s232, ieepa, total},
-        "legal_basis": [...]
-    }
+    异常输入处理:
+    - 负数 CIF -> 返回 _error 字段, 不调真实计算
+    - 不存在 HS 码 -> 返回 _warning + 空税率, 仍能展示查询过程
     """
-    lk = lookup or TariffLookup(load_us_tariff_seed())
+    # 输入校验
+    if cif_value_usd < 0:
+        return {
+            "hs_code": hs_code,
+            "destination": destination,
+            "cif_value_usd": cif_value_usd,
+            "_error": "CIF 货值不能为负数, 请提供正确的货值 (例: 17200 或 '17.2k USD')",
+            "rates": {"mfn": 0, "section_301": 0, "section_232": 0, "ieepa": 0},
+            "amount_usd": {"mfn": 0, "section_301": 0, "section_232": 0, "ieepa": 0, "total": 0},
+            "effective_rate": 0,
+            "lines": [],
+        }
+    from wto_policy.ingest.cloud_lookup import CloudHsLookup
+    cloud = CloudHsLookup()
+    exists = cloud.lookup(hs_code) is not None
+
+    lk = TariffLookup(load_us_tariff_seed())
     bd = DecisionCard.build(
         hs_code=hs_code,
         cif_value_usd=cif_value_usd,
+        origin=origin,
+        destination=destination,
         profile=CompanyProfile(
             name="agent", sector="default", annual_export_usd=0,
             main_destinations=[destination], trade_mode=TradeMode.GENERAL,
         ),
         lookup=lk,
     )
-    return {
+    result = {
         "hs_code": bd.hs_code,
         "destination": bd.destination,
         "cif_value_usd": bd.cif_value_usd,
@@ -111,6 +124,12 @@ def lookup_tariff(
             for line in bd.breakdown.lines
         ],
     }
+    if not exists:
+        result["_warning"] = (
+            f"HS 编码 {hs_code} 在官方 HTSUS 2026 中未找到. "
+            "可能是新分类, 已停产, 或拼写错误. 数字仅基于通用 IEEPA 政策."
+        )
+    return result
 
 
 # ============ Tool 3: 决策卡生成 ============

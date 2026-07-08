@@ -91,6 +91,7 @@ ignore = [
 "tests/**/*.py" = ["B011"]  # assert False 允许
 "tests/eval_v1.py" = ["E402"]  # eval 脚本: sys.path.insert 后 import 是有意的
 "tests/eval_v2.py" = ["E402", "F841"]  # 同上
+"tests/eval_v3.py" = ["E402"]  # 同上
 "tests/e2e_agent_demo.py" = ["E402"]  # 同上
 "src/wto_policy/web/app.py" = ["E402"]  # streamlit 必须在 load_dotenv 后
 "src/wto_policy/cloud_updater.py" = ["E402"]  # CLI 脚本 sys.path 后 import

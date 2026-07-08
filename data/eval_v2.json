@@ -186,11 +186,11 @@
   },
   "agent_accuracy": {
     "name": "agent_accuracy",
-    "overall": 0.822,
+    "overall": 0.778,
     "by_difficulty": {
       "easy": 1.0,
-      "medium": 0.611,
-      "hard": 0.667
+      "medium": 0.556,
+      "hard": 0.333
     },
     "details": [
       {
@@ -224,8 +224,7 @@
           "search_hs_codes"
         ],
         "actual": [
-          "search_hs_codes",
-          "lookup_tariff"
+          "search_hs_codes"
         ],
         "score": 1.0
       },
@@ -238,10 +237,9 @@
           "generate_decision_card"
         ],
         "actual": [
-          "search_hs_codes",
-          "lookup_tariff"
+          "search_hs_codes"
         ],
-        "score": 0.6666666666666666
+        "score": 0.3333333333333333
       },
       {
         "q": "中国出口到美国的玩具关税",
@@ -343,10 +341,9 @@
           "generate_decision_card"
         ],
         "actual": [
-          "search_hs_codes",
-          "lookup_tariff"
+          "search_hs_codes"
         ],
-        "score": 0.6666666666666666
+        "score": 0.3333333333333333
       },
       {
         "q": "求推荐: 我做塑料玩具 出口美国 怎么算关税",
@@ -362,5 +359,5 @@
       }
     ]
   },
-  "overall_score": 0.9288
+  "overall_score": 0.9112
 }

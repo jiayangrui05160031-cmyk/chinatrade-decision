@@ -1,0 +1,213 @@
+{
+  "name": "agent_accuracy_v3",
+  "overall": 0.933,
+  "by_difficulty": {
+    "easy": 1.0,
+    "medium": 0.9,
+    "hard": 0.9
+  },
+  "avg_latency_s": 9.4,
+  "crash_count": 0,
+  "details": [
+    {
+      "q": "我是中山灯具厂, 一单 17,200 美元, HS 9405408000 出口美国 关税多少",
+      "difficulty": "easy",
+      "expected": [
+        "lookup_tariff"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 1.0,
+      "elapsed": 10.0,
+      "error": null
+    },
+    {
+      "q": "17.2k USD 的蓝牙耳机出口美国 关税多少 HS 8518302000",
+      "difficulty": "easy",
+      "expected": [
+        "lookup_tariff"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 1.0,
+      "elapsed": 9.4,
+      "error": null
+    },
+    {
+      "q": "一单 5万美金 出口美国 LED 台灯 1000 个, 走海运",
+      "difficulty": "medium",
+      "expected": [
+        "search_hs_codes",
+        "lookup_tariff"
+      ],
+      "actual": [
+        "search_hs_codes",
+        "lookup_tariff"
+      ],
+      "score": 1.0,
+      "elapsed": 19.6,
+      "error": null
+    },
+    {
+      "q": "bluethooth headphones 出口美国",
+      "difficulty": "medium",
+      "expected": [
+        "search_hs_codes"
+      ],
+      "actual": [
+        "search_hs_codes"
+      ],
+      "score": 1.0,
+      "elapsed": 4.2,
+      "error": null
+    },
+    {
+      "q": "led台灯 HS code",
+      "difficulty": "medium",
+      "expected": [
+        "search_hs_codes"
+      ],
+      "actual": [
+        "search_hs_codes"
+      ],
+      "score": 1.0,
+      "elapsed": 4.2,
+      "error": null
+    },
+    {
+      "q": "我家是深圳的, 卖消费电子, 主要出口美国, 现在什么政策最影响我?",
+      "difficulty": "hard",
+      "expected": [
+        "search_recent_policy"
+      ],
+      "actual": [
+        "search_recent_policy"
+      ],
+      "score": 1.0,
+      "elapsed": 13.9,
+      "error": null
+    },
+    {
+      "q": "A 跟 B 哪个贵? A 是 HS 9405408000 CIF 17200, B 是 HS 851",
+      "difficulty": "medium",
+      "expected": [
+        "lookup_tariff"
+      ],
+      "actual": [
+        "lookup_tariff",
+        "lookup_tariff"
+      ],
+      "score": 1.0,
+      "elapsed": 12.2,
+      "error": null
+    },
+    {
+      "q": "2024 年到现在 Section 301 税率有什么变化?",
+      "difficulty": "hard",
+      "expected": [
+        "search_recent_policy"
+      ],
+      "actual": [
+        "search_recent_policy"
+      ],
+      "score": 1.0,
+      "elapsed": 6.9,
+      "error": null
+    },
+    {
+      "q": "IEEPA 芬太尼税如果被法院推翻, 已缴的税能退吗?",
+      "difficulty": "hard",
+      "expected": [
+        "search_recent_policy"
+      ],
+      "actual": [
+        "search_recent_policy"
+      ],
+      "score": 1.0,
+      "elapsed": 8.3,
+      "error": null
+    },
+    {
+      "q": "MFN 是什么?",
+      "difficulty": "easy",
+      "expected": [
+        "search_recent_policy"
+      ],
+      "actual": [
+        "search_recent_policy"
+      ],
+      "score": 1.0,
+      "elapsed": 7.3,
+      "error": null
+    },
+    {
+      "q": "我是义乌小电商, 100 单货每单 25 美元, 蓝牙耳机走国际快递到美国, 整体关税多少, 怎么申",
+      "difficulty": "hard",
+      "expected": [
+        "lookup_tariff",
+        "generate_decision_card"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 0.5,
+      "elapsed": 12.0,
+      "error": null
+    },
+    {
+      "q": "我家做军火, 能出口到美国吗?",
+      "difficulty": "hard",
+      "expected": [
+        "search_recent_policy"
+      ],
+      "actual": [
+        "search_recent_policy"
+      ],
+      "score": 1.0,
+      "elapsed": 10.9,
+      "error": null
+    },
+    {
+      "q": "HS 8518302000 蓝牙耳机 出口美国 关税多少, 还有最近 301 有什么新政",
+      "difficulty": "medium",
+      "expected": [
+        "lookup_tariff",
+        "search_recent_policy"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 0.5,
+      "elapsed": 11.7,
+      "error": null
+    },
+    {
+      "q": "HS 9999999999 出口美国 关税多少",
+      "difficulty": "easy",
+      "expected": [
+        "lookup_tariff"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 1.0,
+      "elapsed": 7.2,
+      "error": null
+    },
+    {
+      "q": "HS 9405408000 货值 -100 美元",
+      "difficulty": "easy",
+      "expected": [
+        "lookup_tariff"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 1.0,
+      "elapsed": 3.3,
+      "error": null
+    }
+  ]
+}
