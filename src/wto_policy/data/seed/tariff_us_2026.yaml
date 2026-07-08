@@ -1,0 +1,132 @@
+# Section 301 / Section 232 / IEEPA / MFN 关税种子数据
+#
+# 数据来源 (更新 2026-07-08):
+# - USTR Section 301 公告: https://ustr.gov/issue-areas/enforcement/section-301-investigations
+# - HTSUS (USITC): https://hts.usitc.gov/
+# - Federal Register: https://www.federalregister.gov/
+# - 整理时间: 2026-07-08
+#
+# 每条措施:
+# - hs_code: HS 编码(6-10 位, * 是通配, 例如 "8518*" 匹配 8518 全部)
+# - measure_type: MFN / SECTION_301 / SECTION_232 / IEEPA
+# - ad_valorem_rate: 从价税率 (0.25 = 25%)
+# - legal_basis: 法规依据
+# - source_url: 原始 URL
+# - crawled_at: 抓取时间戳
+# - effective_from: 生效日
+# - effective_to: 失效日(可选)
+#
+# 注意:
+# - 这是种子数据, 真实业务请用 wto-update 拉取 USTR / Federal Register 官方公告
+# - List 4B (7.5%) 目前在法律挑战中, 状态可能变化
+# - Section 232 钢铝 2026 年 4-6 月有重大调整, 实际申报前请核实
+
+version: "2026-07-08"
+note: "种子数据, 用于 MVP 离线决策. 真实场景请用 wto-update."
+
+# 美国对华 Section 301 加征清单
+section_301:
+  - id: "list1"
+    description: "Section 301 List 1 (2018-07-06)"
+    legal_basis: "Section 301 List 1, 83 FR 28710"
+    source_url: "https://www.federalregister.gov/d/2018-13410"
+    crawled_at: "2026-07-08T00:00:00Z"
+    effective_from: "2018-07-06"
+    rate: 0.25
+    # 这里列的是 6 位子目级 HS (实际公告是 8-10 位, 简化用 6 位作代表)
+    sample_hs_codes: ["854140", "854231", "850440"]
+
+  - id: "list2"
+    description: "Section 301 List 2 (2018-08-23)"
+    legal_basis: "Section 301 List 2, 83 FR 40823"
+    source_url: "https://www.federalregister.gov/d/2018-17717"
+    crawled_at: "2026-07-08T00:00:00Z"
+    effective_from: "2018-08-23"
+    rate: 0.25
+    sample_hs_codes: ["840731", "840820", "840991"]
+
+  - id: "list3"
+    description: "Section 301 List 3 (2018-09-24)"
+    legal_basis: "Section 301 List 3, 83 FR 47974"
+    source_url: "https://www.federalregister.gov/d/2018-20310"
+    crawled_at: "2026-07-08T00:00:00Z"
+    effective_from: "2018-09-24"
+    rate: 0.25
+    sample_hs_codes: ["851762", "852580", "852871", "950300", "950450", "640419"]
+
+  - id: "list4a"
+    description: "Section 301 List 4A (2019-09-01, 2026-02 调至 7.5%)"
+    legal_basis: "Section 301 List 4A, 84 FR 43304; USTR 2026-02 modification"
+    source_url: "https://www.federalregister.gov/d/2019-17809"
+    crawled_at: "2026-07-08T00:00:00Z"
+    effective_from: "2019-09-01"
+    rate: 0.075
+    sample_hs_codes:
+      - "940510"  # 枝形吊灯
+      - "940520"  # 台灯
+      - "940540"  # 其他电灯 (9405408000 / 9405404000 子级)
+      - "851830"  # 耳机 (蓝牙耳机 8518302000 父级)
+      - "851660"  # 电热
+      - "841810"  # 冰箱
+      - "847130"  # 笔记本
+      - "850811"  # 吸尘器
+
+  - id: "list4b"
+    description: "Section 301 List 4B (暂缓)"
+    legal_basis: "Section 301 List 4B, 84 FR 43304 (suspended)"
+    source_url: "https://www.federalregister.gov/d/2019-17809"
+    crawled_at: "2026-07-08T00:00:00Z"
+    effective_from: "2019-12-15"
+    rate: 0.075
+    suspended: true
+    sample_hs_codes: ["630900"]
+
+# Section 232 钢铝 (2026 年 4-6 月调整)
+section_232:
+  - id: "steel"
+    description: "Section 232 钢铁及衍生品"
+    legal_basis: "Section 232, Proclamation 9776 (2018); modified 2026-04, 2026-06"
+    source_url: "https://www.federalregister.gov/d/2018-05686"
+    crawled_at: "2026-07-08T00:00:00Z"
+    effective_from: "2018-03-23"
+    rate: 0.25
+    # HS Chapter 72 (钢铁) 代表性子目
+    sample_hs_codes: ["720800", "721049", "722519", "730890"]
+
+  - id: "aluminum"
+    description: "Section 232 铝及衍生品"
+    legal_basis: "Section 232, Proclamation 9704/9705 (2018); modified 2026-04"
+    source_url: "https://www.federalregister.gov/d/2018-03420"
+    crawled_at: "2026-07-08T00:00:00Z"
+    effective_from: "2018-03-23"
+    rate: 0.25
+    # HS Chapter 76 (铝) 代表性子目
+    sample_hs_codes: ["760110", "760612", "761699"]
+
+# IEEPA 芬太尼关税 (2025-02 起)
+ieepa:
+  - id: "fentanyl_2025"
+    description: "IEEPA 芬太尼相关加征(2025-02-04, 10%)"
+    legal_basis: "IEEPA, Executive Order 14195 (2025-02-01)"
+    source_url: "https://www.federalregister.gov/d/2025-02044"
+    crawled_at: "2026-07-08T00:00:00Z"
+    effective_from: "2025-02-04"
+    rate: 0.10
+    applies_to: "all_china_origin"  # 全中国原产
+    # 实际公告对部分 HS 豁免, 此处用 6 位占位 + 全 HS 通配语义
+    sample_hs_codes: ["000000"]
+
+# MFN 普通税率(部分代表, MVP 离线用)
+mfn_samples:
+  - hs_code: "9405408000"
+    description: "LED 灯具"
+    rate: 0.034
+    source_url: "https://hts.usitc.gov/?query=9405.40.80.00"
+  - hs_code: "8518302000"
+    description: "蓝牙耳机"
+    rate: 0.0  # 当前 HTSUS 8518.30.20 免 MFN
+    source_url: "https://hts.usitc.gov/?query=8518.30.20.00"
+  - hs_code: "9503000000"
+    description: "玩具"
+    rate: 0.0
+    source_url: "https://hts.usitc.gov/?query=9503"
