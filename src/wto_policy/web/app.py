@@ -63,9 +63,12 @@ def _init_state() -> None:
 
 
 def _render_risk_tag(level: str) -> str:
-    """渲染风险等级标签 (HTML)."""
-    label_map = {"low": "🟢 低", "medium": "🟡 中", "high": "🟠 高", "critical": "🔴 严重"}
-    return f'<span class="risk-tag risk-{level}">{label_map.get(level, level)}</span>'
+    """渲染风险等级标签 (HTML). 色盲友好: 用图标+文字+颜色三重提示."""
+    icon_map = {"low": "✓", "medium": "⚠", "high": "⚠", "critical": "✕"}
+    text_map = {"low": "低风险", "medium": "中风险", "high": "高风险", "critical": "严重"}
+    icon = icon_map.get(level, "•")
+    text = text_map.get(level, level)
+    return f'<span class="risk-tag risk-{level}">{icon} {text}</span>'
 
 
 def _render_brand_header() -> None:
@@ -85,31 +88,43 @@ def _render_query_panel() -> DecisionCard | None:
     """主面板: 输入 + 即时决策卡."""
     st.markdown("### 🔍 查商品 & 算关税")
 
-    col1, col2 = st.columns([2, 1])
-    with col1:
+    # ============ 第 1 步: 产品信息 + 货值数量 (2 列) ============
+    col_left, col_right = st.columns([3, 2], gap="medium")
+
+    with col_left:
         st.markdown("#### 1️⃣ 产品信息")
-        c1, c2 = st.columns(2)
+        c1, c2 = st.columns(2, gap="small")
         with c1:
             product_query = st.text_input(
                 "产品名称 / HS 编码",
                 value="LED 台灯",
                 placeholder="例: LED 台灯 / HS 9405408000",
                 key="product_query",
+                help="支持 HS 编码 (6-10 位) 或 产品中文/英文名",
             )
         with c2:
             destination = st.selectbox(
                 "目的国", ["US", "DE", "FR", "UK", "MX", "VN"],
                 index=0, key="destination",
+                help="当前版本主支持美国",
             )
-    with col2:
+
+    with col_right:
         st.markdown("#### 2️⃣ 货值 & 数量")
-        cif_value = st.number_input(
-            "CIF 货值 (USD)", min_value=0.0, value=17200.0,
-            step=100.0, key="cif_value",
-        )
-        quantity = st.number_input(
-            "数量 (件)", min_value=1, value=1000, step=100, key="quantity",
-        )
+        c1, c2 = st.columns(2, gap="small")
+        with c1:
+            cif_value = st.number_input(
+                "CIF 货值 (USD)",
+                min_value=0.0, value=17200.0,
+                step=1000.0, key="cif_value",
+                format="%g",
+                help="货值 + 运费 + 保险",
+            )
+        with c2:
+            quantity = st.number_input(
+                "数量 (件)", min_value=1, value=1000,
+                step=100, key="quantity",
+            )
 
     # HS 码解析
     hs_code: str | None = None
@@ -215,16 +230,16 @@ def _render_decision_card(card: DecisionCard) -> None:
     st.markdown("### 📊 决策卡")
 
     # 顶部 4 个核心指标
-    c1, c2, c3, c4 = st.columns(4)
+    c1, c2, c3, c4 = st.columns(4, gap="small")
     with c1:
-        st.metric("CIF 货值", f"${card.cif_value_usd:,.2f}")
+        st.metric("💰 CIF 货值", f"${card.cif_value_usd:,.2f}")
     with c2:
-        st.metric("总关税", f"${card.total_tax:,.2f}",
+        st.metric("💸 总关税", f"${card.total_tax:,.2f}",
                   delta=f"实际税率 {card.effective_rate:.1%}")
     with c3:
-        st.metric("净到岸价", f"${card.net_landed_cost:,.2f}")
+        st.metric("📦 净到岸价", f"${card.net_landed_cost:,.2f}")
     with c4:
-        st.metric("单件分摊税", f"${card.per_unit_tax:.4f}")
+        st.metric("🏷️ 单件分摊税", f"${card.per_unit_tax:.4f}")
 
     # 关税明细表
     st.markdown('<div class="section-header">💰 关税明细</div>', unsafe_allow_html=True)
@@ -247,10 +262,10 @@ def _render_decision_card(card: DecisionCard) -> None:
         ],
         "法规依据": [
             "HTSUS General Rate",
-            next((line.legal_basis for line in bd.lines if line.measure_type.value == "section_301"), "—"),
-            next((line.legal_basis for line in bd.lines if line.measure_type.value == "section_232"), "—"),
-            next((line.legal_basis for line in bd.lines if line.measure_type.value == "ieepa"), "—"),
-            "—",
+            next((line.legal_basis for line in bd.lines if line.measure_type.value == "section_301"), ""),
+            next((line.legal_basis for line in bd.lines if line.measure_type.value == "section_232"), ""),
+            next((line.legal_basis for line in bd.lines if line.measure_type.value == "ieepa"), ""),
+            "",
         ],
     }
     st.table(detail_data)
@@ -268,18 +283,25 @@ def _render_decision_card(card: DecisionCard) -> None:
     if card.policy_alerts:
         st.markdown('<div class="section-header">📢 政策警报</div>', unsafe_allow_html=True)
         for a in card.policy_alerts:
+            # 警报 + 来源整合到一个框
             st.warning(f"**[{a.code}]** {a.message_zh}")
             if a.source_url:
-                st.caption(f"来源: {a.source_url}")
+                st.markdown(
+                    f'<div style="margin: -0.5rem 0 0.5rem 1rem; font-size: 0.82rem;">'
+                    f'🔗 <a href="{a.source_url}" target="_blank" style="color: #4f8cff;">{a.source_url}</a>'
+                    f'</div>',
+                    unsafe_allow_html=True,
+                )
 
-    # 建议
+    # 建议 (按优先级)
     if card.suggestions:
         st.markdown('<div class="section-header">💡 行动建议 (按优先级)</div>',
                     unsafe_allow_html=True)
         for s in sorted(card.suggestions, key=lambda x: x.priority):
+            # 长文本自动折叠 (Streamlit 会渲染 st.success)
             st.success(f"**[P{s.priority}]** {s.message_zh}")
             if s.action_url:
-                st.caption(f"行动: {s.action_url}")
+                st.caption(f"🔗 行动: {s.action_url}")
 
     # 来源
     with st.expander(f"🔗 数据来源 ({len(card.sources)} 条)"):
@@ -324,10 +346,17 @@ def _render_sidebar() -> None:
         st.markdown(
             f"**状态:** {'🟢 新鲜' if is_fresh else '🟡 即将拉新'}"
         )
+        # 数据源显示名映射 (中英对应)
+        source_labels = {
+            "ustr": "USTR 办公室 (美)",
+            "federal_register": "Federal Register (美)",
+            "mofcom": "商务部 (中)",
+        }
         for src, when in f["last_ago"].items():
+            label = source_labels.get(src, src)
             st.markdown(
                 f'<div class="freshness-card">'
-                f'<div class="source-name">{src}</div>'
+                f'<div class="source-name">{label}</div>'
                 f'<div class="source-time">{when}</div>'
                 f'</div>',
                 unsafe_allow_html=True,
