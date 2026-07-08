@@ -84,6 +84,7 @@ ignore = [
     "B008",  # FastAPI Depends() 常见用法
     "RUF002",  # 中文 docstring 用 × 是正常用法
     "RUF003",  # 同上
+    "RUF001",  # 中文 str 里的 × 是正常用法
 ]
 
 [tool.ruff.lint.per-file-ignores]

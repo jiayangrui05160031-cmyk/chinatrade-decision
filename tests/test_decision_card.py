@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import date
-
 import pytest
 
 from wto_policy.core.company_profile import CompanyProfile, TradeMode

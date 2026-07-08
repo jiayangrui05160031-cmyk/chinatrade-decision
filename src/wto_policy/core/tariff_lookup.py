@@ -53,10 +53,7 @@ class TariffLookup:
         for m in self._measures:
             # 1. HS 前缀匹配
             #    特殊: hs_code == "000000" 表示"全 HS 通配" (IEEPA 等)
-            if m.hs_code == "000000" or target_hs.startswith(m.hs_code):
-                hs_match = True
-            else:
-                hs_match = False
+            hs_match = m.hs_code == "000000" or target_hs.startswith(m.hs_code)
             if not hs_match:
                 continue
             # 2. origin 匹配: MFN 视为通配, 其他要精确

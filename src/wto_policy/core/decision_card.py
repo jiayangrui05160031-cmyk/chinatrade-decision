@@ -23,7 +23,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from wto_policy.core.company_profile import CompanyProfile, TradeMode
 from wto_policy.core.tariff_calc import TariffBreakdown, calculate_tariff
 from wto_policy.core.tariff_lookup import TariffLookup
-from wto_policy.core.tariff_model import MeasureType
 
 
 class RiskLevel(StrEnum):
@@ -310,8 +309,8 @@ class DecisionCard(BaseModel):
 
 __all__ = [
     "DecisionCard",
+    "PolicyAlert",
     "Risk",
     "RiskLevel",
-    "PolicyAlert",
     "Suggestion",
     ]

@@ -67,7 +67,7 @@ def root() -> dict:
 
 @app.get("/healthz")
 def healthz() -> dict:
-    return {"status": "ok", "tariff_measures": len(_LOOKUP._measures)}  # noqa: SLF001
+    return {"status": "ok", "tariff_measures": len(_LOOKUP._measures)}
 
 
 @app.post("/api/decision-card", response_model=DecisionCard)
@@ -88,7 +88,7 @@ def decision_card(req: DecisionCardRequest) -> DecisionCard:
             main_hs_codes=req.profile.main_hs_codes,
             has_preferential_origin=req.profile.has_preferential_origin,
         )
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid profile: {e}") from e
 
     try:
@@ -102,7 +102,7 @@ def decision_card(req: DecisionCardRequest) -> DecisionCard:
             profile=profile,
             lookup=_LOOKUP,
         )
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         raise HTTPException(status_code=400, detail=f"Decision card build failed: {e}") from e
 
 
