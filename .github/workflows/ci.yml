@@ -39,9 +39,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - run: pip install -e ".[dev]"
-      # 不下载真实 PDF / CSV (CI 跑不动, 也避免 flakiness)
-      # 不跑 test_china_pdf (依赖真实 PDF)
-      - run: pytest --no-cov --ignore=tests/test_china_pdf.py
+      # CI 跳过:
+      # - test_china_pdf.py: 需下载 gov.cn PDF, CI 跑不动
+      # - test_web_e2e.py:   需启动 streamlit, CI 慢 + 网络限制
+      - run: pytest --no-cov --ignore=tests/test_china_pdf.py --ignore=tests/test_web_e2e.py
 
   build:
     name: Build package
