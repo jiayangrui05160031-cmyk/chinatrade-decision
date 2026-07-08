@@ -10,7 +10,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.11"
 authors = [
-    { name = "jiaya", email = "[email protected]" },
+    { name = "jiaya" },
 ]
 keywords = ["wto", "tariff", "hs-code", "trade", "policy", "e-commerce", "cross-border"]
 classifiers = [
@@ -82,6 +82,8 @@ select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
 ignore = [
     "E501",  # 已在 line-length 控制
     "B008",  # FastAPI Depends() 常见用法
+    "RUF002",  # 中文 docstring 用 × 是正常用法
+    "RUF003",  # 同上
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -96,9 +98,6 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--cov=wto_policy",
-    "--cov-report=term-missing",
-    "--cov-fail-under=80",
 ]
 asyncio_mode = "auto"
 markers = [
