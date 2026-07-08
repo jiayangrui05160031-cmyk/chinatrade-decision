@@ -68,10 +68,20 @@ class Agent:
         *,
         llm: LlmClient | None = None,
         max_steps: int = 5,
+        auto_refresh: bool = True,
     ) -> None:
         self.llm = llm or LlmClient()
         self.tools = get_tool_schemas()
         self.max_steps = max_steps
+        self._auto_refresh = auto_refresh
+        # 启动时触发一次后台拉新 (不阻塞)
+        if auto_refresh:
+            from contextlib import suppress
+
+            from wto_policy.agent.refresh import ensure_fresh
+
+            with suppress(Exception):
+                ensure_fresh(force=False, blocking=False)
 
     def run(self, user_message: str, history: list[LlmMessage] | None = None) -> AgentRun:
         """运行一次 agent."""

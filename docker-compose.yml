@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  wto-agent:
+    build: .
+    container_name: wto-policy-agent
+    ports:
+      - "8501:8501"   # Streamlit
+      - "8000:8000"   # FastAPI (可选)
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data     # 持久化 SQLite 缓存
+    environment:
+      - PORT=8501
+    restart: unless-stopped
+
+  # 可选: 定时拉新 (不暴露端口)
+  updater:
+    build: .
+    container_name: wto-policy-updater
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: wto-update
+    # 本地 cron 替代: 每 6 小时跑一次
+    # docker exec wto-policy-updater wto-update

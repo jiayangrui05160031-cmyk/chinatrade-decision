@@ -56,7 +56,7 @@ notebook = [
 
 [project.scripts]
 wto-lookup-hs = "wto_policy.cli.lookup_hs:main"
-wto-update = "wto_policy.update:main"
+wto-update = "wto_policy.agent.update:main"
 wto-api = "wto_policy.api.main:run"
 wto-web = "wto_policy.web.app:main"
 

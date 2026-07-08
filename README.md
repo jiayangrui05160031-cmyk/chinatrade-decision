@@ -1,151 +1,176 @@
-# WTO Policy Support / 跨境政策决策支持
+# WTO Policy Support / 跨境政策决策支持 (AI Agent)
 
-> 给中国制造业出口企业的"**HS 编码 × 美国市场**"决策支持工具。
-> 聚焦 **中美贸易**:301 关税、232 钢铝、IEEPA 芬太尼税、Section 201/421 反倾销反补贴 + 商务部反制 + WTO 争端。
+> 🤖 **AI Agent** 实时给中国制造业出口企业做"中美贸易"决策支持.
+> 输入 HS 编码 × 目的国 × 货值, Agent 自动查 HS / 算税 / **拉最新政策** / 出建议.
 
 [![CI](https://github.com/jiayangrui05160031-cmyk/wto-policy-support/actions/workflows/ci.yml/badge.svg)](https://github.com/jiayangrui05160031-cmyk/wto-policy-support/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Agent](https://img.shields.io/badge/agent-MiniMax%20LLM-blueviolet)](#-核心能力)
 
 ## 这是什么?
 
-> 一个 **开源** 的 Python 工具,回答这类问题:
+一个 **AI Agent** 回答这类问题:
 
-> 我是广东中山的 LED 灯具厂,要把 HS 9405.40 的台灯出口到美国,现在 301 关税到底要加多少?
-> 有没有 Section 301 排除窗口可以申请?现在到岸价客户会嫌贵吗?
-> 商务部有没有对应的反制清单在美方原产地商品上?
+> "我家是中山的 LED 灯具厂, 要出货到美国, 一单大概 5 万美金, 1000 个, 走海运. 帮我算下要交多少税, 该不该接这单?"
 
-**输入:** `HS 编码 (8-10 位)` + `目的国 US` + `单价` + `数量` + `FOB/CIF`  
-**输出:** 决策卡 — MFN 关税 + 301 加征清单轮次 + 232 钢铝(若适用) + 反制提醒 + 豁免窗口 + 行动建议
+> "最近 Section 301 有什么新动作?"
 
-## 当前状态
+Agent 会自动:
+1. 调 `search_hs_codes` 找 HS 候选 → 让用户选
+2. 调 `lookup_tariff` 算关税 (Section 301 + IEEPA + 232 + MFN)
+3. 调 `search_recent_policy` **实时查 Federal Register** 拉最新政策
+4. 调 `generate_decision_card` 出完整决策卡 (含风险/政策警报/建议)
 
-🚧 **MVP 开发中 (v0.1.0)**,完成度 0/26 tasks.
+## 📡 实时性
 
-## 典型场景支持范围 (v0.1.0)**
+**Agent 的政策数据是实时的,不是写死的:**
+
+- **缓存层** — SQLite 存已抓的公告 (`data/cache/policies.db`)
+- **实时抓取** — Federal Register API / USTR RSS / 商务部 RSS
+- **自动刷新** — Agent 启动时**后台线程**自动拉新 (24h 内不重复抓)
+- **手动触发** — `wto-update` 命令 / Streamlit "立即拉新" 按钮
+- **GitHub Actions cron** — 每 6 小时自动跑, 数据推回仓库
+
+| 场景 | 速度 | 来源 |
+|------|------|------|
+| 缓存命中 | < 50ms | SQLite |
+| 缓存 miss | 1-3 秒 | 实时 HTTP |
+| 启动后第一次 query | 1-3 秒 | 实时 HTTP (后台拉) |
+| 后续 query | < 50ms | 缓存 |
+
+## 🎯 典型场景 (v0.1.0)
 
 | 方向 | 状态 | 覆盖政策 |
 |------|------|----------|
-| **🇺🇸 美国(主)** | 🔄 规划中 | USTR 301、Section 232 钢铝/汽车、IEEPA 芬太尼税、Section 201/421、CHIPS |
-| **🇨🇳 美国→中国反制** | 🔄 规划中 | 商务部对美加征关税清单(16 批) |
-| 🇪🇺 欧盟 | ⏸ 二期 | 150€ 免税取消、CBAM |
-| 🇬🇧 UK | ⏸ 二期 | UK Global Tariff |
-| 🌏 APEC | ⏸ 二期 | 区域协定 |
+| **🇺🇸 美国(主)** | ✅ | USTR 301、Section 232 钢铝/汽车、IEEPA 芬太尼税、Section 201/421 |
+| **🇨🇳 美国→中国反制** | ✅ | 商务部对美加征关税清单 |
+| 🇪🇺 欧盟 | ⏸ v0.2 | 150€ 免税取消、CBAM |
+| 🇬🇧 UK | ⏸ v0.2 | UK Global Tariff |
 
-## 快速开始
+## 🚀 快速开始
 
+### 1. 安装
 ```bash
-# 1. 克隆
 git clone https://github.com/jiayangrui05160031-cmyk/wto-policy-support.git
 cd wto-policy-support
-
-# 2. 安装
 python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # macOS/Linux
+.venv\Scripts\activate              # Windows
+# source .venv/bin/activate         # macOS/Linux
 pip install -e ".[dev]"
-
-# 3. 跑测试
-pytest
-
-# 4. 启动 API
-wto-api                          # http://localhost:8000/docs
-
-# 5. 启动 Web UI
-wto-web                          # http://localhost:8501
 ```
 
-## 使用示例
-
-```python
-from wto_policy.core.decision_card import build_decision_card
-from wto_policy.core.company_profile import CompanyProfile
-
-profile = CompanyProfile(
-    name="中山灯具厂",
-    sector="灯具",
-    main_destinations=["US"],
-    trade_mode="general_trade",   # 走海运一般贸易
-)
-
-card = build_decision_card(
-    hs_code="940540",
-    destination="US",
-    unit_value_usd=15.0,
-    quantity=1000,
-    profile=profile,
-)
-
-print(f"MFN 关税: ${card.base_duty:.2f}")
-print(f"301 加征 (list 4A): {card.additional_duty_rate:.1%}")
-print(f"单件总税负: ${card.total_tax / card.quantity:.2f}")
-for alert in card.policy_alerts:
-    print(f"⚠ {alert}")
-for sug in card.suggestions:
-    print(f"💡 {sug}")
+### 2. 配置 LLM
+```bash
+cp .env.example .env
+# 编辑 .env, 填入 MiniMax API key
 ```
 
-## 数据源
-
-所有数据来自 **官方/半官方源**,详见 [docs/data_sources.md](docs/data_sources.md)。
-
-核心源:
-- **HS 编码:** 中国海关 / WCO HS Master
-- **海关税则:** EU TARIC / US HTSUS / UK Global Tariff
-- **WTO:** Documents Online / Tariff & Trade Data
-- **政策动态:** 商务部 / 海关总署 / EU Council / USTR 官方 RSS
-
-任何数据条目都带 `source_url` + `crawled_at` 时间戳。
-
-## 架构
-
-```
-src/
-├── ingest/      # 抓取层:HS 库 / TARIC / HTSUS / 政策 RSS
-├── core/        # 业务核心:HS 解析 / 关税计算 / 决策卡
-├── api/         # FastAPI
-├── web/         # Streamlit
-├── cli/         # 命令行
-└── update.py    # 数据更新入口
+### 3. 拉一次最新政策 (首次)
+```bash
+wto-update
+# 或指定源:
+wto-update --source federal_register --query "section 301"
 ```
 
-## 项目背景
+### 4. 启动 (3 种方式)
 
-**聚焦中美贸易。** 中国制造业出口企业面对的核心关税/政策层:
+#### 方式 A: 聊天 UI (推荐)
+```bash
+wto-web
+# 浏览器打开 http://localhost:8501
+```
 
-1. **USTR 301 关税** — 4 轮清单(34 亿美元 → 3700 亿美元),HS 码 100% 覆盖到 8 位
-2. **Section 232 钢铝/汽车** — 部分豁免、部分到期
-3. **IEEPA 芬太尼税** — 2025 年新增,中港特定行业
-4. **Section 201/421** — 光伏、洗衣机、家具等单类产品保护
-5. **中国反制** — 商务部 16 批对美加征关税清单
-6. **WTO 争端** — 中国诉美 DS437、DS544、DS554、DS558 等
+#### 方式 B: REST API
+```bash
+wto-api
+# 浏览器打开 http://localhost:8000/docs
+```
 
-**目标:** 让一个出口企业主输入 HS 编码,30 秒内看清"我现在要交多少税、有哪些豁免窗口、商务部对应反制是什么"。
+#### 方式 C: CLI 速查
+```bash
+wto-lookup-hs 9405408000
+wto-lookup-hs "bluetooth" --lang en
+```
 
-**其他方向**(欧盟 CBAM、UK、APEC) 二期再做,MVP 先打穿中美线。
+#### 方式 D: 端到端 demo (5 个真实场景)
+```bash
+python tests/e2e_agent_demo.py
+```
+
+## 💡 核心能力
+
+| 能力 | 工具 | 说明 |
+|------|------|------|
+| HS 编码搜索 | `search_hs_codes` | 自然语言 → HS 候选 |
+| 关税计算 | `lookup_tariff` | HS + CIF → 关税明细 (MFN/301/232/IEEPA) |
+| 决策卡 | `generate_decision_card` | 风险/政策/建议 + 来源 |
+| 实时政策 | `search_recent_policy` | 拉 Federal Register / USTR / 商务部 |
+
+## 📊 真实场景示例
+
+**用户:** "我家是中山的 LED 灯具厂, 要出货到美国, 一单大概 5 万美金, 1000 个, 走海运. 帮我看看?"
+
+**Agent 行为:**
+1. 调 `search_hs_codes` (中文 1 次 + 英文 1 次) → 给 4 个 HS 候选让用户确认
+2. 用户: "用 9405408000"
+3. 调 `lookup_tariff` → 算 MFN 3.4% + 301 List 4A 7.5% + IEEPA 10% = 20.9%
+4. 调 `generate_decision_card` → 出完整卡
+
+**用户:** "最近 Section 301 有什么新动作?"
+
+**Agent 行为:**
+1. 调 `search_recent_policy` (query="section 301")
+2. 实时拉 Federal Register (2026-06-24 德国调查, 2026-06-03 越南 IP 调查, 2026-03-17 制造业产能)
+3. 总结成 3 条带链接的要点
+
+## 🏗️ 架构
+
+```
+src/wto_policy/
+├── core/                  # 业务核心 (HS 解析, 关税计算, 决策卡)
+│   ├── hs_resolver.py
+│   ├── tariff_calc.py
+│   └── decision_card.py
+├── agent/                 # AI Agent
+│   ├── llm_client.py      # MiniMax API 封装
+│   ├── tools.py           # 4 个工具
+│   ├── agent.py           # function-calling 循环
+│   ├── policy_fetcher.py  # 实时抓 RSS/API
+│   ├── policy_cache.py    # SQLite 缓存
+│   ├── policy_summarizer.py  # LLM 摘要
+│   ├── refresh.py         # 后台拉新
+│   └── update.py          # CLI: wto-update
+├── api/                   # FastAPI
+├── web/                   # Streamlit 聊天 UI
+├── cli/                   # CLI
+└── data/seed/             # 内置种子数据
+```
+
+## 🧪 测试
+
+```bash
+pytest                  # 88 测试
+pytest -m network       # 真实网络测试 (USTR/FR/商务部)
+pytest -k agent         # 只跑 Agent 测试
+```
+
+## 📦 数据源
+
+所有数据来自 **官方/半官方源**, 详见 [docs/data_sources.md](docs/data_sources.md):
+
+- **HS 编码:** USITC HTSUS / 中国海关
+- **海关税则:** Federal Register / USTR
+- **政策动态:** USTR RSS / Federal Register API / 商务部 RSS
+
+每条数据带 `source_url` + `crawled_at`, 永不入库不实数据.
 
 ## ⚠ 免责声明
 
-本工具 **不构成法律/税务/报关意见**。
-具体贸易活动请以各国海关、商务部门及您的报关行官方解释为准。
-详见 [LICENSE](LICENSE) 末尾免责声明。
+本工具 **不构成法律/税务/报关意见**.
+具体贸易活动请以各国海关 + 商务部门 + 报关行官方解释为准.
+详见 [LICENSE](LICENSE) 末尾免责声明.
 
-## 路线图 (中美专题)
+## 📝 License
 
-- [x] 项目规划
-- [ ] Task 1-3: 项目骨架 + CI
-- [ ] Task 4-7: HS 编码库 (HTSUS 主表 + 中国海关对照)
-- [ ] Task 8-11: 关税计算引擎 (HTSUS + USTR 301 加征 + Section 232)
-- [ ] Task 12-13: 豁免窗口 + Section 301 排除延期跟踪
-- [ ] Task 14-16: 政策态度 (USTR 公告 + 商务部反制清单 + WTO 争端 DS 案件)
-- [ ] Task 17-20: 决策卡 + API
-- [ ] Task 21-23: Streamlit UI
-- [ ] Task 24-26: 文档 + 发布 v0.1.0
-
-## 贡献
-
-欢迎 PR!请先看 [CONTRIBUTING.md](CONTRIBUTING.md) (TODO)。
-
-## 许可证
-
-[MIT](LICENSE) + 末尾免责声明
+MIT + 末尾免责声明

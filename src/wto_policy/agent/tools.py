@@ -15,6 +15,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+from wto_policy.agent.policy_cache import init_schema, query_recent
 from wto_policy.agent.policy_fetcher import search_policy
 from wto_policy.agent.policy_fetcher import to_dict as policy_to_dict
 from wto_policy.core.company_profile import CompanyProfile, TradeMode
@@ -145,16 +146,58 @@ def search_recent_policy(
     *,
     sources: list[str] | None = None,
     limit_per_source: int = 5,
+    use_cache: bool = True,
+    cache_max_age_days: int = 7,
 ) -> list[dict[str, Any]]:
-    """Agent 工具: 实时搜索 USTR / Federal Register / 商务部 的最新政策公告.
+    """Agent 工具: 搜索最新政策公告.
+
+    策略 (实时性):
+    1. 先查 SQLite 缓存 (默认 7 天内) — 速度快
+    2. 缓存 miss 时, 实时抓 RSS / API — 拿到真数据
+    3. 抓到的也入缓存, 供下次 query
 
     Args:
         query: 关键词, 例 'section 301' / 'list 4A' / 'ieepa fentanyl'
         sources: 子集 ['ustr', 'federal_register', 'mofcom']
         limit_per_source: 每源最多几条
+        use_cache: 是否先用缓存
+        cache_max_age_days: 缓存有效期
     """
+    # 1. 尝试缓存
+    if use_cache:
+        try:
+            init_schema()
+            cached = query_recent(
+                days=cache_max_age_days, keyword=query, limit=limit_per_source * 3,
+            )
+            if cached:
+                # 缓存命中, 直接返回 (按 source 字段映射名字)
+                return [
+                    {
+                        "title": r["title"],
+                        "url": r["url"],
+                        "published": r["published"],
+                        "source": r["source"],
+                        "summary": r["summary"],
+                        "_from_cache": True,
+                    }
+                    for r in cached
+                ]
+        except Exception:
+            pass  # 缓存失败, fallthrough 到实时
+
+    # 2. 实时抓
     items = search_policy(query, sources=sources, limit_per_source=limit_per_source)
-    return policy_to_dict(items)
+    dicts = policy_to_dict(items)
+
+    # 3. 入缓存 (不阻塞, 失败不报错)
+    try:
+        from wto_policy.agent.policy_cache import upsert_items
+        upsert_items(dicts)
+    except Exception:
+        pass
+
+    return dicts
 
 
 # ============ 工具注册表 ============

@@ -1,0 +1,45 @@
+name: refresh-policy
+
+on:
+  schedule:
+    # 每 6 小时跑一次 (UTC)
+    - cron: "0 */6 * * *"
+  workflow_dispatch:  # 手动触发
+
+permissions:
+  contents: write   # 允许 commit/push 数据
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: pip install -e .
+
+      - name: Update policy cache
+        env:
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+        run: |
+          mkdir -p data/cache
+          wto-update
+          wto-update --list
+
+      - name: Commit & push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "[email protected]"
+          git add data/cache/policies.db
+          # 只有当 DB 有变化时才 commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore(data): refresh policy cache [skip ci]"
+            git push
+          fi

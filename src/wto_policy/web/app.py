@@ -20,11 +20,15 @@ from wto_policy.agent.agent import Agent, AgentRun
 def _init_state() -> None:
     """初始化 session state."""
     if "agent" not in st.session_state:
-        st.session_state.agent = Agent()
+        # 启动 agent 时会自动调一次 ensure_fresh (后台拉新)
+        st.session_state.agent = Agent(auto_refresh=True)
     if "messages" not in st.session_state:
         st.session_state.messages = []  # list[dict(role, content, ...)]
     if "last_run" not in st.session_state:
         st.session_state.last_run = None
+    if "freshness" not in st.session_state:
+        from wto_policy.agent.refresh import freshness_report
+        st.session_state.freshness = freshness_report()
 
 
 def _render_turn(turn) -> None:  # type: ignore[no-untyped-def]
@@ -85,6 +89,26 @@ def main() -> None:
 
     _init_state()
     _example_buttons()
+
+    # 实时性面板
+    with st.sidebar:
+        st.markdown("### 📡 实时数据")
+        f = st.session_state.freshness
+        st.metric("缓存条数", f["total_items"])
+        is_fresh = f["is_fresh"]
+        st.markdown(
+            f"**状态:** {'🟢 新鲜' if is_fresh else '🟡 即将拉新'}"
+        )
+        for src, when in f["last_ago"].items():
+            st.caption(f"  {src}: {when}")
+        if st.button("🔄 立即拉新政策", use_container_width=True):
+            with st.spinner("拉新中..."):
+                from wto_policy.agent.refresh import ensure_fresh
+                ensure_fresh(force=True, blocking=True)
+                from wto_policy.agent.refresh import freshness_report
+                st.session_state.freshness = freshness_report()
+                st.success(f"已拉新! 当前缓存 {st.session_state.freshness['total_items']} 条")
+                st.rerun()
 
     # 显示历史
     for msg in st.session_state.messages:
