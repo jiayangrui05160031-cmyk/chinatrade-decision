@@ -12,14 +12,13 @@ from wto_policy.ingest.china_pdf import (
     parse_china_import_duty_pdf,
 )
 
-
 PDF_DIR = Path(__file__).parent.parent / "data" / "raw" / "china_2026"
 
 
 @pytest.fixture(scope="module")
 def pdf_path() -> Path:
     """下载/获取进口税率 PDF (跳过已下载)."""
-    paths = download_china_pdfs()
+    download_china_pdfs()
     p = PDF_DIR / "import_duty.pdf"
     if not p.exists():
         pytest.skip(f"PDF 未下载: {p}")

@@ -6,7 +6,7 @@
     "medium": 0.9,
     "hard": 0.9
   },
-  "avg_latency_s": 9.4,
+  "avg_latency_s": 8.9,
   "crash_count": 0,
   "details": [
     {
@@ -19,7 +19,7 @@
         "lookup_tariff"
       ],
       "score": 1.0,
-      "elapsed": 10.0,
+      "elapsed": 8.2,
       "error": null
     },
     {
@@ -32,7 +32,7 @@
         "lookup_tariff"
       ],
       "score": 1.0,
-      "elapsed": 9.4,
+      "elapsed": 7.4,
       "error": null
     },
     {
@@ -47,7 +47,7 @@
         "lookup_tariff"
       ],
       "score": 1.0,
-      "elapsed": 19.6,
+      "elapsed": 17.9,
       "error": null
     },
     {
@@ -60,7 +60,7 @@
         "search_hs_codes"
       ],
       "score": 1.0,
-      "elapsed": 4.2,
+      "elapsed": 4.4,
       "error": null
     },
     {
@@ -73,7 +73,7 @@
         "search_hs_codes"
       ],
       "score": 1.0,
-      "elapsed": 4.2,
+      "elapsed": 5.2,
       "error": null
     },
     {
@@ -86,7 +86,7 @@
         "search_recent_policy"
       ],
       "score": 1.0,
-      "elapsed": 13.9,
+      "elapsed": 11.7,
       "error": null
     },
     {
@@ -100,7 +100,7 @@
         "lookup_tariff"
       ],
       "score": 1.0,
-      "elapsed": 12.2,
+      "elapsed": 11.2,
       "error": null
     },
     {
@@ -113,7 +113,7 @@
         "search_recent_policy"
       ],
       "score": 1.0,
-      "elapsed": 6.9,
+      "elapsed": 11.9,
       "error": null
     },
     {
@@ -126,7 +126,7 @@
         "search_recent_policy"
       ],
       "score": 1.0,
-      "elapsed": 8.3,
+      "elapsed": 7.0,
       "error": null
     },
     {
@@ -153,7 +153,7 @@
         "lookup_tariff"
       ],
       "score": 0.5,
-      "elapsed": 12.0,
+      "elapsed": 12.8,
       "error": null
     },
     {
@@ -166,7 +166,7 @@
         "search_recent_policy"
       ],
       "score": 1.0,
-      "elapsed": 10.9,
+      "elapsed": 9.5,
       "error": null
     },
     {
@@ -180,7 +180,7 @@
         "lookup_tariff"
       ],
       "score": 0.5,
-      "elapsed": 11.7,
+      "elapsed": 7.8,
       "error": null
     },
     {
@@ -193,7 +193,7 @@
         "lookup_tariff"
       ],
       "score": 1.0,
-      "elapsed": 7.2,
+      "elapsed": 8.2,
       "error": null
     },
     {
@@ -206,7 +206,7 @@
         "lookup_tariff"
       ],
       "score": 1.0,
-      "elapsed": 3.3,
+      "elapsed": 3.0,
       "error": null
     }
   ]
