@@ -99,13 +99,40 @@ uv venv && source .venv/bin/activate  # Linux/macOS
 uv pip install -e ".[dev]"
 ```
 
-### 2. 配置 LLM (MiniMax API)
+### 2. 配置 LLM (选一个 provider)
+
+项目不绑定任何模型, **7 种 provider 任选** (都兼容 OpenAI 协议):
 
 ```bash
 cp .env.example .env
-# 编辑 .env, 填入 MINIMAX_API_KEY
-# 申请: https://api.minimaxi.com/
+# 编辑 .env, 按需选一个
 ```
+
+| Provider | 申请地址 | 推荐场景 | 一句话 |
+|----------|----------|----------|--------|
+| **MiniMax** 🏆 | [api.minimaxi.com](https://api.minimaxi.com/) | **国内首选** | 默认, 稳定, 便宜 |
+| **OpenAI** | [platform.openai.com](https://platform.openai.com/) | 海外 | set `provider=openai` |
+| **DeepSeek** | [platform.deepseek.com](https://platform.deepseek.com/) | **性价比之王** | 便宜, 国产, 强 |
+| **Qwen (通义)** | [aliyun.com](https://help.aliyun.com/zh/model-studio/getting-started/models) | 阿里云用户 | dashscope API |
+| **Zhipu (智谱)** | [open.bigmodel.cn](https://open.bigmodel.cn/) | 大学项目 | glm-4-flash |
+| **Ollama** | [ollama.ai](https://ollama.ai/) | 本地跑 | **完全免费** |
+| **Custom** | 任意 OpenAI 兼容 API | 企业内网 | 自定 URL+Key |
+
+**.env 示例 (选 `deepseek`, 最平价):**
+```env
+LLM_PROVIDER=deepseek
+DEEPSEEK_API_KEY=sk-xxx
+# 或选 OpenAI:
+# LLM_PROVIDER=openai
+# OPENAI_API_KEY=sk-xxx
+# LLM_MODEL=gpt-4o-mini
+# 或选 Ollama (免费本地):
+# LLM_PROVIDER=ollama
+# LLM_BASE_URL=http://localhost:11434/v1
+# LLM_MODEL=llama3.1:8b
+```
+
+> **向后兼容:** 旧的 `MINIMAX_API_KEY` 配置照常工作, 无需修改。
 
 ### 3. 拉真实云端数据 (USITC + 中国海关)
 
