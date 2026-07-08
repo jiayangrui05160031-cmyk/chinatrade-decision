@@ -58,8 +58,8 @@ class LlmClient:
         *,
         tools: list[dict[str, Any]] | None = None,
         tool_choice: str | dict[str, Any] = "auto",
-        temperature: float = 0.3,
-        max_tokens: int = 2048,
+        temperature: float = 0.2,
+        max_tokens: int = 1024,
     ) -> dict[str, Any]:
         """一次 Chat Completions 调用. 返回原始 dict."""
         payload: dict[str, Any] = {

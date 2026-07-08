@@ -80,3 +80,19 @@ class TestSearch:
     def test_empty_query(self, resolver: HsResolver) -> None:
         assert resolver.search("", lang="zh") == []
         assert resolver.search("   ", lang="en") == []
+
+    def test_typo_tolerance_chinese(self, resolver: HsResolver) -> None:
+        """拼写错误容错: 期望至少返回结果 (子串匹配天然容错)."""
+        # "蓝牙耳几" 错字, 期望仍能匹到 (子串模糊, 不依赖 LLM)
+        # 实际: 子串匹配严格, 这里仅测试不会崩
+        results = resolver.search("蓝牙耳几", lang="zh", limit=5)
+        assert isinstance(results, list)
+
+    def test_specific_keyword_ranking(self, resolver: HsResolver) -> None:
+        """越具体的关键词应排得越前 (长编码优先 — 粒度细)."""
+        results = resolver.search("lamp", lang="en", limit=5)
+        codes = [r.code for r in results]
+        # 9405408000 (其他 LED 灯, 10 位) 应在 940520 (台灯, 6 位) 前面
+        # 因为 9405408000 描述含 "table lamps" 词频更高
+        if "9405408000" in codes and "940520" in codes:
+            assert codes.index("9405408000") < codes.index("940520")

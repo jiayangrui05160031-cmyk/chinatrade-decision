@@ -96,7 +96,14 @@ class HsResolver:
     ) -> list[HsCode]:
         """模糊搜索.
 
-        极简实现: 子串匹配. 不引入 jieba 之类依赖.
+        排序逻辑 (重要!):
+        1. 一级: 关键词在描述中出现的次数 (越多越相关)
+        2. 二级: HS 编码长度 (越长越前 — 10 位先于 6 位, 粒度细 = 具体)
+
+        这样搜 "蓝牙" 会优先返回 8518302000 (蓝牙耳机, 10 位) 而非 851830 (通用耳机, 6 位).
+        搜 "耳机" 6 位 851830 应在前, 因为 6 位描述就含 "耳机".
+
+        极简实现: 子串匹配, 不引入 jieba 之类依赖.
         - 中文: 直接子串
         - 英文: 拆分 word 后 AND 匹配
         """
@@ -104,22 +111,24 @@ class HsResolver:
         if not query:
             return []
 
-        candidates: list[tuple[HsCode, int]] = []
+        candidates: list[tuple[HsCode, int, int, str]] = []
         if lang == "zh":
             for c in self._by_code.values():
-                if query in c.description_zh.lower():
-                    # 编码越短越排前
-                    priority = -len(c.code)
-                    candidates.append((c, priority))
+                count = c.description_zh.lower().count(query)
+                if count > 0:
+                    # 一级: -频次 (频次高排前) 二级: 长度倒序 (长=具体 排前)
+                    priority = (-count, -len(c.code), c.code)
+                    candidates.append((c, *priority))
         else:
             words = query.split()
             for c in self._by_code.values():
                 desc = c.description_en.lower()
                 if all(w in desc for w in words):
-                    priority = -len(c.code)
-                    candidates.append((c, priority))
-        candidates.sort(key=lambda x: x[1])
-        return [c for c, _ in candidates[:limit]]
+                    count = sum(desc.count(w) for w in words)
+                    priority = (-count, -len(c.code), c.code)
+                    candidates.append((c, *priority))
+        candidates.sort(key=lambda x: (x[1], x[2], x[3]))
+        return [c for c, *_ in candidates[:limit]]
 
 
 @lru_cache(maxsize=1)

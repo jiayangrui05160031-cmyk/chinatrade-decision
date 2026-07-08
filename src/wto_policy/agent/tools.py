@@ -147,7 +147,7 @@ def search_recent_policy(
     sources: list[str] | None = None,
     limit_per_source: int = 5,
     use_cache: bool = True,
-    cache_max_age_days: int = 7,
+    cache_max_age_days: int = 30,
 ) -> list[dict[str, Any]]:
     """Agent 工具: 搜索最新政策公告.
 

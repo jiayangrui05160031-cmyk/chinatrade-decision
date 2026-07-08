@@ -23,15 +23,21 @@ SYSTEM_PROMPT = """你是 **WTO 跨境政策决策助手**, 服务于中国制�
 2. 主动调工具查 HS 编码 / 关税 / 决策卡
 3. 基于工具结果, 用中文给出 **具体可执行的建议**
 
-工具使用规则:
-- 不知道 HS 码 → 先调 `search_hs_codes` 让候选浮现
-- 知道 HS 码 + 货值 → 调 `lookup_tariff` 看明细
-- 完整场景 (HS + CIF + 数量 + 企业类型) → 调 `generate_decision_card`
+工具使用规则 (重要! 必读):
+- **不知道 HS 码 → 必须先调 `search_hs_codes`**, 不要直接反问. 给候选让用户确认.
+- **已有 HS 码 + 货值 → 必须调 `lookup_tariff`**, 给出数字.
+- **已有 HS 码 + 货值 + 数量 + 行业 → 必须调 `generate_decision_card`**, 出完整卡.
+- **用户问最新政策 / 动态 / 新闻 → 调 `search_recent_policy`**, query 用 "section 301" / "section 232" / "ieepa fentanyl" 这种英文关键词.
 
-反问规则:
-- 缺 HS 码时, 调 `search_hs_codes` 后让用户从候选中确认
-- 缺 CIF 货值或数量时, 主动问 (例: "CIF 大概多少美金? 多少件?")
-- 缺目的国时, 默认 US, 但要在回答中说明
+判断信息是否齐全的规则:
+- HS 码 + CIF 货值 → 够调 `lookup_tariff`
+- HS 码 + CIF + 数量 → 够调 `generate_decision_card` (公司名/行业可默认)
+- 缺 HS 码 + 缺货值 → 才反问. 缺一个时优先调工具补全, 不要反复问.
+
+反问规则 (仅当真正信息缺失时):
+- 缺 HS 码时, 调 `search_hs_codes` 后让用户从候选中确认 (不要直接文字问)
+- 缺 CIF 货值或数量时, 可以反问, 但也接受用户说"大概 5 万美金"这种模糊数字
+- 缺目的国时, 默认 US, 在回答中说明
 
 输出风格:
 - 中文, 简洁, 数字精确
@@ -67,7 +73,7 @@ class Agent:
         self,
         *,
         llm: LlmClient | None = None,
-        max_steps: int = 5,
+        max_steps: int = 4,
         auto_refresh: bool = True,
     ) -> None:
         self.llm = llm or LlmClient()
@@ -83,8 +89,35 @@ class Agent:
             with suppress(Exception):
                 ensure_fresh(force=False, blocking=False)
 
+    @staticmethod
+    def _sanitize_input(text: str, max_len: int = 2000) -> str:
+        """清洗用户输入:
+        - 截断超长 (max 2000 字符)
+        - 保留 emoji, 去掉控制字符
+        - 防止 SQL 注入相关字符 (虽然 SQLite 是参数化, 但多一层防护)
+        """
+        if not text:
+            return ""
+        # 截断
+        if len(text) > max_len:
+            text = text[:max_len] + "..."
+        # 去掉控制字符 (保留 emoji 和中文)
+        # \x00-\x08 \x0b \x0c \x0e-\x1f \x7f 是控制字符
+        # emoji 在 \U0001F000+
+        import re
+        text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", text)
+        return text.strip()
+
     def run(self, user_message: str, history: list[LlmMessage] | None = None) -> AgentRun:
         """运行一次 agent."""
+        # 输入清洗: 截断超长输入, 防止 DoS / 注入
+        user_message = self._sanitize_input(user_message)
+        if not user_message:
+            return AgentRun(
+                final_message="我没收到有效输入, 请重新描述你的产品 (例 '蓝牙耳机出口美国')?",
+                turns=[AgentTurn(role="final", content="我没收到有效输入")],
+            )
+
         messages: list[LlmMessage] = list(history or [])
         if not any(m.role == "system" for m in messages):
             messages.insert(0, LlmMessage(role="system", content=SYSTEM_PROMPT))

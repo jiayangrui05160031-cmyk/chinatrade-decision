@@ -1,0 +1,148 @@
+{
+  "tool_call_accuracy": 0.65,
+  "tool_call_details": [
+    {
+      "q": "HS 9405408000, 货值 17200 美元, 出口美国, 关税多少?",
+      "expected": [
+        "lookup_tariff"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 1.0,
+      "elapsed_s": 12.2
+    },
+    {
+      "q": "蓝牙耳机出口美国多少钱",
+      "expected": [
+        "search_hs_codes"
+      ],
+      "actual": [],
+      "score": 0.0,
+      "elapsed_s": 3.8
+    },
+    {
+      "q": "我是 LED 灯具厂, 1000 个出口美国, 5 万美金, 接不接?",
+      "expected": [
+        "generate_decision_card"
+      ],
+      "actual": [
+        "search_hs_codes"
+      ],
+      "score": 0.0,
+      "elapsed_s": 5.7
+    },
+    {
+      "q": "我出口到美国, 一单多少钱",
+      "expected": [],
+      "actual": [],
+      "score": 1.0,
+      "elapsed_s": 2.6
+    },
+    {
+      "q": "最近 301 有什么新动作",
+      "expected": [
+        "search_recent_policy"
+      ],
+      "actual": [
+        "search_recent_policy"
+      ],
+      "score": 1.0,
+      "elapsed_s": 13.9
+    },
+    {
+      "q": "HS 8518302000 蓝牙耳机, 单价 25 美元, 100 个",
+      "expected": [
+        "lookup_tariff",
+        "generate_decision_card"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 0.5,
+      "elapsed_s": 9.7
+    },
+    {
+      "q": "我想知道中国出口到美国的玩具关税",
+      "expected": [
+        "search_hs_codes",
+        "lookup_tariff"
+      ],
+      "actual": [],
+      "score": 0.0,
+      "elapsed_s": 2.4
+    },
+    {
+      "q": "Section 232 钢铝现在多少",
+      "expected": [
+        "search_recent_policy"
+      ],
+      "actual": [
+        "search_recent_policy"
+      ],
+      "score": 1.0,
+      "elapsed_s": 6.9
+    },
+    {
+      "q": "我要走小包直邮到美国",
+      "expected": [],
+      "actual": [],
+      "score": 1.0,
+      "elapsed_s": 1.5
+    },
+    {
+      "q": "HS 940540, 货值 1 万美元, 出口美国",
+      "expected": [
+        "lookup_tariff"
+      ],
+      "actual": [
+        "lookup_tariff"
+      ],
+      "score": 1.0,
+      "elapsed_s": 8.5
+    }
+  ],
+  "latency": {
+    "min_s": 1.5,
+    "max_s": 13.9,
+    "mean_s": 6.7,
+    "p95_s": 12.2
+  },
+  "cache": {
+    "cached_ms": 2.0,
+    "real_ms": 2591.9,
+    "speedup": "1295x"
+  },
+  "hs_search": "6/9",
+  "seed": {
+    "hs_codes": 8,
+    "tariff_measures": 32,
+    "hs_chapters": 2
+  },
+  "edge_cases": [
+    {
+      "case": "空字符串",
+      "status": "OK (35 chars)"
+    },
+    {
+      "case": "emoji",
+      "status": "OK (57 chars)"
+    },
+    {
+      "case": "超长",
+      "status": "OK (210 chars)"
+    },
+    {
+      "case": "注入",
+      "status": "OK (50 chars)"
+    },
+    {
+      "case": "数字",
+      "status": "OK (64 chars)"
+    },
+    {
+      "case": "None-ish",
+      "status": "OK (35 chars)"
+    }
+  ]
+}

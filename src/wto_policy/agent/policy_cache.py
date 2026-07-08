@@ -114,13 +114,16 @@ def upsert_items(
 
 def query_recent(
     *,
-    days: int = 7,
+    days: int = 30,
     source: str | None = None,
     keyword: str | None = None,
     limit: int = 50,
     db_path: Path | None = None,
 ) -> list[dict]:
-    """查最近 N 天政策. keyword 在 title/summary 模糊匹配."""
+    """查最近 N 天政策. keyword 在 title/summary 模糊匹配.
+
+    默认 30 天: 政策公告通常至少 30 天周期有意义, 7 天太短.
+    """
     since = (datetime.now(UTC) - timedelta(days=days)).isoformat()
     sql = "SELECT * FROM policy_items WHERE published >= ?"
     params: list = [since]

@@ -89,6 +89,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["B011"]  # assert False 允许
+"tests/eval_v1.py" = ["E402"]  # eval 脚本: sys.path.insert 后 import 是有意的
+"tests/e2e_agent_demo.py" = ["E402"]  # 同上
 
 # ---- Pytest ----
 [tool.pytest.ini_options]
