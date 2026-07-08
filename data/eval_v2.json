@@ -186,10 +186,10 @@
   },
   "agent_accuracy": {
     "name": "agent_accuracy",
-    "overall": 0.756,
+    "overall": 0.822,
     "by_difficulty": {
-      "easy": 0.938,
-      "medium": 0.528,
+      "easy": 1.0,
+      "medium": 0.611,
       "hard": 0.667
     },
     "details": [
@@ -212,9 +212,10 @@
           "generate_decision_card"
         ],
         "actual": [
-          "lookup_tariff"
+          "lookup_tariff",
+          "generate_decision_card"
         ],
-        "score": 0.5
+        "score": 1.0
       },
       {
         "q": "蓝牙耳机出口美国多少钱",
@@ -249,8 +250,10 @@
           "search_hs_codes",
           "lookup_tariff"
         ],
-        "actual": [],
-        "score": 0.0
+        "actual": [
+          "search_hs_codes"
+        ],
+        "score": 0.5
       },
       {
         "q": "最近 Section 301 有什么新动作",
@@ -359,5 +362,5 @@
       }
     ]
   },
-  "overall_score": 0.9024
+  "overall_score": 0.9288
 }
