@@ -19,7 +19,6 @@ from typing import Any, Literal
 import httpx
 from pydantic import BaseModel, ConfigDict
 
-
 # ============ Provider 预设 ============
 # 选 provider 自动填 base_url + 默认 model
 
@@ -196,4 +195,4 @@ class LlmClient:
         return f"LlmClient(provider={self.provider!r}, model={self.model!r}, base_url={self.base_url})"
 
 
-__all__ = ["LlmClient", "LlmMessage", "PROVIDERS"]
+__all__ = ["PROVIDERS", "LlmClient", "LlmMessage"]
