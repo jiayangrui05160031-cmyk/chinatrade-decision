@@ -16,7 +16,6 @@ Section 301 真实数据下载: https://ustr.gov/issue-areas/enforcement/section
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 from datetime import date
 
 # 官方公开的 Section 301 列表 (人工核对 USITC/USTR 2026 公告)
@@ -89,7 +88,7 @@ SECTION_301_LISTS: list[dict] = [
 
 def get_active_lists() -> list[dict]:
     """返回当前生效的列表 (排除暂缓)."""
-    return [l for l in SECTION_301_LISTS if not l.get("suspended", False)]
+    return [lst for lst in SECTION_301_LISTS if not lst.get("suspended", False)]
 
 
 def lookup_section_301(hs_code: str, dest: str = "US") -> dict | None:

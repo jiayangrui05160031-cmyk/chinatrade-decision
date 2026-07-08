@@ -11,34 +11,29 @@
 
 from __future__ import annotations
 
-import shutil
 import sqlite3
 import sys
 import time
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / "src"))
 
-from wto_policy.ingest.htsus_csv import (
-    HtsusRow,
-    parse_general_rate,
-    parse_htsus_csv,
-    rows_to_hs_codes,
+from wto_policy.agent.policy_cache import (
+    init_schema,
+    upsert_items,
 )
-from wto_policy.ingest.ustr_301 import SECTION_301_LISTS
 from wto_policy.agent.policy_fetcher import (
     fetch_federal_register,
     fetch_mofcom_rss,
     fetch_ustr_press,
     to_dict,
 )
-from wto_policy.agent.policy_cache import (
-    init_schema,
-    record_crawl,
-    upsert_items,
+from wto_policy.ingest.htsus_csv import (
+    parse_htsus_csv,
 )
+from wto_policy.ingest.ustr_301 import SECTION_301_LISTS
 
 # ============== HTSUS ==============
 HTSUS_URL = "https://www.usitc.gov/sites/default/files/tata/hts/hts_2026_revision_2_csv.csv"
@@ -166,9 +161,9 @@ def ingest_policy_news() -> int:
     """拉 USTR / Federal Register / 商务部 公告 → 复用 policy_cache."""
     print("  [down] USTR press releases")
     ustr = fetch_ustr_press(limit=20)
-    print(f"  [down] Federal Register (Section 301 + 232 + IEEPA)")
+    print("  [down] Federal Register (Section 301 + 232 + IEEPA)")
     fr = fetch_federal_register(query="section 301 china tariff", limit=20)
-    print(f"  [down] 商务部 RSS")
+    print("  [down] 商务部 RSS")
     mofcom = fetch_mofcom_rss(limit=20)
 
     all_items = to_dict(ustr) + to_dict(fr) + to_dict(mofcom)
@@ -186,15 +181,15 @@ def main() -> None:
     print()
     print("1. 拉 USITC HTSUS 2026 Rev 2 CSV (~4MB, 3.5 万行)")
     download_htsus()
-    n_hs = ingest_htsus_to_db()
+    ingest_htsus_to_db()
 
     print()
     print("2. 入 USTR Section 301 清单")
-    n_301 = ingest_ustr_301_to_db()
+    ingest_ustr_301_to_db()
 
     print()
     print("3. 拉政策新闻 (USTR / Federal Register / 商务部)")
-    n_news = ingest_policy_news()
+    ingest_policy_news()
 
     elapsed = time.time() - t0
 

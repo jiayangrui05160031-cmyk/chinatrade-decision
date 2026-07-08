@@ -108,4 +108,4 @@ class CloudHsLookup:
         }
 
 
-__all__ = ["CloudHsLookup", "CLOUD_DB"]
+__all__ = ["CLOUD_DB", "CloudHsLookup"]

@@ -9,7 +9,6 @@ from __future__ import annotations
 import csv
 import re
 from dataclasses import dataclass
-from datetime import UTC, datetime
 from pathlib import Path
 
 from wto_policy.core.tariff_model import HsCode
@@ -79,8 +78,7 @@ def parse_htsus_csv(csv_path: str | Path) -> list[HtsusRow]:
 
 def rows_to_hs_codes(rows: list[HtsusRow]) -> list[HsCode]:
     """HTSUS 行 → HsCode 模型 (10 位统计位优先)."""
-    # 优先 10 位 > 8 位 > 6 位 (按长度倒序去重, 保留最具体的)
-    seen_short: dict[str, HsCode] = {}  # prefix 6/8 → HsCode (待 fallback)
+    # 优先 10 位 > 8 位 (按长度倒序去重, 保留最具体的)
     ten_digit: list[HsCode] = []
 
     for r in rows:
@@ -144,8 +142,8 @@ def parse_general_rate(rate_str: str) -> float | None:
 
 __all__ = [
     "HtsusRow",
+    "parse_general_rate",
     "parse_htsus_csv",
     "rows_to_hs_codes",
     "save_parsed",
-    "parse_general_rate",
 ]
