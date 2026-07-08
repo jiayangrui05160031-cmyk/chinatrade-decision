@@ -1,0 +1,85 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ---- Virtual envs ----
+.venv/
+venv/
+env/
+ENV/
+.python-version
+
+# ---- IDE ----
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ---- Testing / Coverage ----
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# ---- Type checking ----
+.mypy_cache/
+.ruff_cache/
+
+# ---- Project specific ----
+# 真实抓取的原始数据(可能含版权)
+data/raw/
+data/processed/
+# 抓取期间生成的中间文件
+*.tmp
+*.bak
+*.log
+
+# 抓取下来的 SQLite 数据库
+data/cache/*.db
+data/cache/*.sqlite
+data/cache/*.sqlite3
+
+# 用户上传的企业画像
+data/uploads/
+
+# Secrets (永不入库)
+.env
+.env.local
+*.pem
+*.key
+secrets.yaml
+secrets.json
+
+# OS ----
+Desktop.ini
+$RECYCLE.BIN/
+
+# VCR cassettes(默认不入库,改用 fixtures/ 模式)
+tests/cassettes/
