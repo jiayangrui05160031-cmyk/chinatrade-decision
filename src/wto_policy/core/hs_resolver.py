@@ -104,8 +104,8 @@ class HsResolver:
         搜 "耳机" 6 位 851830 应在前, 因为 6 位描述就含 "耳机".
 
         极简实现: 子串匹配, 不引入 jieba 之类依赖.
-        - 中文: 直接子串
-        - 英文: 拆分 word 后 AND 匹配
+        - 中文: 拆 query 成单字/词, 任一字命中即可 (OR 匹配)
+        - 英文: 拆分 word 后 AND 匹配 (所有 word 都必须在 desc 中)
         """
         query = query.strip().lower()
         if not query:
@@ -113,12 +113,16 @@ class HsResolver:
 
         candidates: list[tuple[HsCode, int, int, str]] = []
         if lang == "zh":
-            for c in self._by_code.values():
-                count = c.description_zh.lower().count(query)
+            # 中文 OR 匹配: query 中任一非空字符出现在 desc 中
+            chars = [c for c in query if c.strip()]
+            if not chars:
+                return []
+            for c_obj in self._by_code.values():
+                desc = c_obj.description_zh.lower()
+                count = sum(desc.count(ch) for ch in chars)
                 if count > 0:
-                    # 一级: -频次 (频次高排前) 二级: 长度倒序 (长=具体 排前)
-                    priority = (-count, -len(c.code), c.code)
-                    candidates.append((c, *priority))
+                    priority = (-count, -len(c_obj.code), c_obj.code)
+                    candidates.append((c_obj, *priority))
         else:
             words = query.split()
             for c in self._by_code.values():

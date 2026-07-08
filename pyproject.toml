@@ -91,6 +91,7 @@ ignore = [
 "tests/**/*.py" = ["B011"]  # assert False 允许
 "tests/eval_v1.py" = ["E402"]  # eval 脚本: sys.path.insert 后 import 是有意的
 "tests/e2e_agent_demo.py" = ["E402"]  # 同上
+"src/wto_policy/web/app.py" = ["E402"]  # streamlit 必须在 load_dotenv 后
 
 # ---- Pytest ----
 [tool.pytest.ini_options]

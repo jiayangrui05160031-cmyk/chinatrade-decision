@@ -1,0 +1,202 @@
+/* WTO Policy Support — 全局样式 (覆盖 Streamlit 默认) */
+
+/* ============ 基础配色 ============ */
+:root {
+    --bg-primary: #0f1419;
+    --bg-secondary: #1a1f2e;
+    --bg-card: #1e2433;
+    --bg-elevated: #252b3d;
+    --border: #2d3548;
+    --text-primary: #e6e8eb;
+    --text-secondary: #a0a6b8;
+    --text-muted: #6b7280;
+    --accent-blue: #4f8cff;
+    --accent-green: #10b981;
+    --accent-yellow: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-purple: #8b5cf6;
+    --gradient-primary: linear-gradient(135deg, #4f8cff 0%, #8b5cf6 100%);
+    --gradient-success: linear-gradient(135deg, #10b981 0%, #4f8cff 100%);
+    --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+}
+
+.stApp {
+    background: linear-gradient(180deg, #0f1419 0%, #1a1f2e 100%);
+}
+
+/* ============ 标题区 ============ */
+.main-header {
+    background: var(--gradient-primary);
+    padding: 2rem 2.5rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(79, 140, 255, 0.3);
+}
+.main-header h1 {
+    color: white;
+    margin: 0;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+.main-header p {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0.5rem 0 0 0;
+    font-size: 1.05rem;
+}
+
+/* ============ 卡片 ============ */
+.stCard {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+}
+.stCard:hover {
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ============ 指标卡 (st.metric) ============ */
+div[data-testid="stMetricValue"] {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+div[data-testid="stMetricLabel"] {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+div[data-testid="stMetricDelta"] {
+    font-size: 0.9rem;
+}
+
+/* ============ 按钮 ============ */
+.stButton > button {
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+.stButton > button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 140, 255, 0.4);
+}
+.stButton > button:active {
+    transform: translateY(0);
+}
+
+/* ============ 输入框 ============ */
+.stTextInput > div > div > input,
+.stNumberInput > div > div > input,
+.stSelectbox > div > div {
+    background: var(--bg-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+}
+.stTextInput > div > div > input:focus,
+.stNumberInput > div > div > input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.2);
+}
+
+/* ============ 风险标签 ============ */
+.risk-tag {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 0.5rem;
+}
+.risk-low { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+.risk-medium { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+.risk-high { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
+.risk-critical { background: rgba(239, 68, 68, 0.3); color: #ef4444; border: 2px solid #ef4444; }
+
+/* ============ 决策卡大区块 ============ */
+.section-header {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.2rem 0 0.6rem 0;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--accent-blue);
+    display: inline-block;
+}
+
+/* ============ 表格 ============ */
+.stTable {
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* ============ 聊天界面 ============ */
+.stChatMessage {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin: 0.5rem 0;
+}
+.stChatMessage[data-testid="user"] {
+    background: var(--bg-elevated);
+    border-color: var(--accent-blue);
+}
+
+/* ============ 侧栏 ============ */
+section[data-testid="stSidebar"] {
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+}
+
+/* ============ 实时数据小卡片 ============ */
+.freshness-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem;
+    margin: 0.4rem 0;
+}
+.freshness-card .source-name {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.freshness-card .source-time {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0.2rem;
+}
+
+/* ============ 免责水印 ============ */
+.disclaimer {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+/* ============ 工具调用展开 ============ */
+div[data-testid="stStatusWidget"] {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}

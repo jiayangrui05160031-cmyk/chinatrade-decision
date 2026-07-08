@@ -24,7 +24,8 @@ class TestSearchHsCodes:
         assert len(results) > 0
 
     def test_empty(self) -> None:
-        results = search_hs_codes("不存在的品名zzzz", lang="zh")
+        # 实际: 真无效的 query (汉字字符不常见)
+        results = search_hs_codes("𠮷𠀀𠂤", lang="zh")
         assert results == []
 
 
