@@ -94,6 +94,12 @@ class DecisionCard(BaseModel):
     policy_alerts: list[PolicyAlert] = Field(default_factory=list)
     suggestions: list[Suggestion] = Field(default_factory=list)
 
+    # 实时性 (数据截至时间)
+    data_freshness: dict = Field(
+        default_factory=dict,
+        description="数据时效: {source: '2026-07-08T12:00:00Z', age_minutes: 45}",
+    )
+
     # 溯源
     sources: list[str] = Field(default_factory=list)
 

@@ -187,6 +187,34 @@ def _render_query_panel() -> DecisionCard | None:
                 hs_code=hs_code, cif_value_usd=cif_value, quantity=quantity,
                 destination=destination, profile=profile, lookup=_LOOKUP,
             )
+            # 填数据时效 (从云端 HS 库读 crawled_at)
+            try:
+                from wto_policy.ingest.cloud_lookup import CloudHsLookup
+                cl = CloudHsLookup()
+                hs_row = cl.lookup(hs_code)
+                if hs_row and hs_row.get("crawled_at"):
+                    from datetime import UTC
+                    from datetime import datetime as _dt
+                    ct = _dt.fromisoformat(hs_row["crawled_at"])
+                    age = _dt.now(UTC) - ct
+                    days = age.days
+                    if days == 0:
+                        age_human = f"今天 {ct.strftime('%H:%M')}"
+                    elif days == 1:
+                        age_human = "昨天"
+                    elif days < 30:
+                        age_human = f"{days} 天前"
+                    elif days < 365:
+                        age_human = f"{days // 30} 个月前"
+                    else:
+                        age_human = f"{days // 365} 年前"
+                    card.data_freshness = {
+                        "source": hs_row.get("source", "USITC HTSUS 2026 Rev 2"),
+                        "crawled_at": ct.strftime("%Y-%m-%d %H:%M UTC"),
+                        "age_human": age_human,
+                    }
+            except Exception:
+                pass  # 云端 DB 不可用就跳过
             st.session_state.last_card = card
             st.session_state.last_input = {
                 "product_query": product_query,
@@ -228,6 +256,21 @@ def _render_decision_card(card: DecisionCard) -> None:
     """渲染决策卡 (大区块)."""
     st.markdown("---")
     st.markdown("### 📊 决策卡")
+
+    # 数据时效徽章 (顶端)
+    freshness = card.data_freshness or {}
+    if freshness:
+        src = freshness.get("source", "USITC HTSUS")
+        age = freshness.get("age_human", "未知")
+        crawled = freshness.get("crawled_at", "")
+        st.markdown(
+            f'<div style="background: linear-gradient(90deg, #10b981 0%, #4f8cff 100%); '
+            f'padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 1rem; color: white; font-size: 0.9rem;">'
+            f'📡 <strong>数据实时</strong>: 来自 <code>{src}</code>, '
+            f'截至 <code>{crawled}</code> ({age})'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
     # 顶部 4 个核心指标
     c1, c2, c3, c4 = st.columns(4, gap="small")

@@ -11,9 +11,11 @@
 from __future__ import annotations
 
 import json
+from contextlib import suppress
 from dataclasses import dataclass, field
 
 from wto_policy.agent.llm_client import LlmClient, LlmMessage
+from wto_policy.agent.memory import SessionMemory, memory_to_system_msg
 from wto_policy.agent.tools import call_tool, get_tool_schemas
 
 SYSTEM_PROMPT = """你是 **WTO 跨境政策决策助手**, 服务于中国制造业出口企业.
@@ -137,11 +139,13 @@ class Agent:
         llm: LlmClient | None = None,
         max_steps: int = 4,
         auto_refresh: bool = True,
+        memory: SessionMemory | None = None,
     ) -> None:
         self.llm = llm or LlmClient()
         self.tools = get_tool_schemas()
         self.max_steps = max_steps
         self._auto_refresh = auto_refresh
+        self.memory = memory or SessionMemory()
         # 启动时触发一次后台拉新 (不阻塞)
         if auto_refresh:
             from contextlib import suppress
@@ -171,7 +175,7 @@ class Agent:
         return text.strip()
 
     def run(self, user_message: str, history: list[LlmMessage] | None = None) -> AgentRun:
-        """运行一次 agent."""
+        """运行一次 agent. 支持多轮 (memory 自动复用)."""
         # 输入清洗: 截断超长输入, 防止 DoS / 注入
         user_message = self._sanitize_input(user_message)
         if not user_message:
@@ -180,9 +184,16 @@ class Agent:
                 turns=[AgentTurn(role="final", content="我没收到有效输入")],
             )
 
+        # 多轮记忆: 从消息里提取 HS/货值/数量 + 注入上下文
+        self.memory.update_from_user(user_message)
+        memory_prompt = memory_to_system_msg(self.memory)
+
         messages: list[LlmMessage] = list(history or [])
         if not any(m.role == "system" for m in messages):
-            messages.insert(0, LlmMessage(role="system", content=SYSTEM_PROMPT))
+            base_system = SYSTEM_PROMPT
+            if memory_prompt:
+                base_system = base_system + "\n\n" + memory_prompt
+            messages.insert(0, LlmMessage(role="system", content=base_system))
         messages.append(LlmMessage(role="user", content=user_message))
 
         turns: list[AgentTurn] = []
@@ -252,6 +263,14 @@ class Agent:
             # 没有 tool_calls, 收尾
             final = msg.get("content", "") or ""
             turns.append(AgentTurn(role="final", content=final))
+            # 多轮记忆: 把最后那次工具结果存到 memory + 记 assistant 响应
+            if tool_calls:
+                for t in reversed(turns):
+                    if t.role == "tool_result":
+                        with suppress(json.JSONDecodeError, TypeError):
+                            self.memory.last_tool_result = json.loads(t.content)
+                        break
+            self.memory.update_from_assistant(final)
             break
         else:
             # 超过 max_steps
