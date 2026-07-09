@@ -16,13 +16,19 @@ def load_us_tariff_seed() -> list[TariffMeasure]:
     """加载种子数据, 转成 TariffMeasure 列表.
 
     注意: 同一个 HS 码在多个清单上时, 生成多条 TariffMeasure 记录.
+    YAML 字段约定:
+        hs_codes (v0.2+)  /  sample_hs_codes (兼容旧版) — HS 前缀列表
     """
     data = yaml.safe_load(_SEED_FILE.read_text(encoding="utf-8"))
     crawled = datetime(2026, 7, 8, tzinfo=UTC)
     measures: list[TariffMeasure] = []
 
+    def _codes(defn: dict) -> list[str]:
+        """取 HS 码列表, 兼容新旧字段名."""
+        return defn.get("hs_codes") or defn.get("sample_hs_codes") or []
+
     for list_def in data["section_301"]:
-        for hs in list_def["sample_hs_codes"]:
+        for hs in _codes(list_def):
             measures.append(
                 TariffMeasure(
                     hs_code=hs,  # 6 位, 已对齐
@@ -38,7 +44,7 @@ def load_us_tariff_seed() -> list[TariffMeasure]:
             )
 
     for defn in data["section_232"]:
-        for hs in defn["sample_hs_codes"]:
+        for hs in _codes(defn):
             measures.append(
                 TariffMeasure(
                     hs_code=hs,
@@ -54,7 +60,7 @@ def load_us_tariff_seed() -> list[TariffMeasure]:
             )
 
     for ieepa in data["ieepa"]:
-        for hs in ieepa["sample_hs_codes"]:
+        for hs in _codes(ieepa):
             measures.append(
                 TariffMeasure(
                     hs_code=hs,  # 000000 表示"通配, 见 TariffLookup.find 特殊处理"

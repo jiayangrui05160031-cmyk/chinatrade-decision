@@ -43,9 +43,9 @@ class TestCalculateTariff:
         assert MeasureType.IEEPA in types
 
     def test_232_applies_to_steel(self, lookup: TariffLookup) -> None:
-        """720800 钢铁应触发 Section 232 25%."""
+        """720800 钢铁应触发 Section 232 50% (2025-03-12 起 50%)."""
         b = calculate_tariff(hs_code="720800", cif_value_usd=10000.0, lookup=lookup)
-        assert b.section_232 == pytest.approx(2500.0, rel=0.01)
+        assert b.section_232 == pytest.approx(5000.0, rel=0.01)
 
     def test_232_does_not_apply_to_lighting(self, lookup: TariffLookup) -> None:
         b = calculate_tariff(hs_code="9405408000", cif_value_usd=1000.0, lookup=lookup)

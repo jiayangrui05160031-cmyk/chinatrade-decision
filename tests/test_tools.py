@@ -39,7 +39,8 @@ class TestLookupTariff:
 
     def test_steel_has_232(self) -> None:
         r = lookup_tariff("720800", cif_value_usd=10000.0)
-        assert r["rates"]["section_232"] == 0.25
+        # 2025-03-12 起, Section 232 钢铁 50%
+        assert r["rates"]["section_232"] == 0.5
 
     def test_amounts_sum(self) -> None:
         r = lookup_tariff("9405408000", cif_value_usd=1000.0)
