@@ -8,6 +8,10 @@
 - origin: 精确匹配 CN; MFN 用 'XX' 表示"所有原产", 实际查询时应视为匹配任何 origin
 - destination: 精确匹配
 - on_date: 在 effective_from..effective_to 窗口内
+
+新增 (v0.2):
+- extra_mfn: dict[hs_prefix, rate]  真库来的 MFN (覆盖种子里的 MFN)
+- get_mfn():  按 HS 前缀查 MFN
 """
 
 from __future__ import annotations
@@ -19,14 +23,32 @@ from wto_policy.core.tariff_model import MeasureType, TariffMeasure
 
 
 class TariffLookup:
-    """内存版 Tariff 查询.
+    """内存版 Tariff 查询 (含 MFN 来源扩展)."""
 
-    数据量小 (MVP 几百条) 时直接 list scan;
-    数据量大了再上 SQLite 索引.
-    """
-
-    def __init__(self, measures: Iterable[TariffMeasure]) -> None:
+    def __init__(
+        self,
+        measures: Iterable[TariffMeasure],
+        extra_mfn: dict[str, float] | None = None,
+    ) -> None:
         self._measures: list[TariffMeasure] = list(measures)
+        # MFN 来源: HS 前缀 -> 从价税率 (例 "85183020": 0.0)
+        self._extra_mfn: dict[str, float] = extra_mfn or {}
+
+    def add_mfn(self, hs_prefix: str, rate: float) -> None:
+        """加一条 MFN 来源 (云端真实数据, 比种子准)."""
+        self._extra_mfn[hs_prefix] = rate
+
+    def get_mfn(self, hs_code: str) -> float | None:
+        """从 extra_mfn 查 MFN, 优先 longest prefix match."""
+        norm = hs_code.replace(".", "").replace(" ", "")
+        # 从最长 (10) 到最短 (6) 找
+        for length in (10, 8, 6):
+            if len(norm) < length:
+                continue
+            key = norm[:length].ljust(length, "0")
+            if key in self._extra_mfn:
+                return self._extra_mfn[key]
+        return None
 
     def find(
         self,
@@ -36,14 +58,7 @@ class TariffLookup:
         destination: str = "US",
         on: date | None = None,
     ) -> list[TariffMeasure]:
-        """返回所有适用措施.
-
-        Args:
-            hs_code: 6/8/10 位 (10 位优先)
-            origin: ISO 2-letter
-            destination: ISO 2-letter
-            on: 生效日期, 默认今天
-        """
+        """返回所有适用措施."""
         target = on or date.today()
         target_hs = hs_code.replace(".", "").replace(" ", "")
         origin_up = origin.upper()
@@ -52,11 +67,9 @@ class TariffLookup:
         results: list[TariffMeasure] = []
         for m in self._measures:
             # 1. HS 前缀匹配
-            #    特殊: hs_code == "000000" 表示"全 HS 通配" (IEEPA 等)
-            hs_match = m.hs_code == "000000" or target_hs.startswith(m.hs_code)
-            if not hs_match:
+            if not (m.hs_code == "000000" or target_hs.startswith(m.hs_code)):
                 continue
-            # 2. origin 匹配: MFN 视为通配, 其他要精确
+            # 2. origin 匹配
             if m.origin == "XX":  # MFN 通配
                 pass
             elif m.origin.upper() != origin_up:

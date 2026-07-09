@@ -13,7 +13,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -134,6 +134,29 @@ def calculate_tariff(
     measures = lookup.find(
         hs_code=hs_code, origin=origin, destination=destination, on=on_date
     )
+
+    # v0.2: 注入云端真实 MFN (HTSUS CSV 读到的 General Rate)
+    # 优先级: 真 MFN > 种子 MFN
+    # v0.2: 注入云端真实 MFN (HTSUS CSV 读到的 General Rate)
+    # 优先级: 真 MFN > 种子 MFN
+    real_mfn = lookup.get_mfn(hs_code)
+    if real_mfn is not None:
+        # 去掉种子里 MFN 类型的旧记录
+        measures = [m for m in measures if m.measure_type != MeasureType.MFN]
+        # 加一条真 MFN 记录
+        real_measure = TariffMeasure(
+            hs_code=hs_code,
+            origin="XX",
+            destination=destination,
+            measure_type=MeasureType.MFN,
+            ad_valorem_rate=real_mfn,
+            effective_from=date(1995, 1, 1),  # 远早, 永远生效
+            legal_basis="HTSUS 2026 Rev 2 General Rate of Duty (usitc.gov)",
+            source_url="https://hts.usitc.gov/",
+            crawled_at=datetime.now(UTC),
+        )
+        measures.append(real_measure)
+
     return TariffBreakdown.from_measures(
         hs_code=hs_code,
         origin=origin,

@@ -70,3 +70,35 @@ class TestGroupByType:
         assert len(groups[MeasureType.SECTION_301]) >= 1
         # MFN 至少 1 条
         assert MeasureType.MFN in groups
+
+
+class TestExtraMfn:
+    """v0.2 新增: 从云端 DB 注入真实 MFN."""
+
+    def test_add_mfn(self) -> None:
+        lk = TariffLookup([])
+        lk.add_mfn("85183020", 0.0)  # 蓝牙耳机官方 "Free"
+        lk.add_mkn = None
+        assert lk.get_mfn("85183020") == 0.0
+        assert lk.get_mfn("8518302000") == 0.0  # 10 位 fallback 8 位
+
+    def test_longest_prefix_wins(self) -> None:
+        lk = TariffLookup([])
+        lk.add_mfn("851830", 0.034)
+        lk.add_mfn("85183020", 0.0)  # 更具体
+        # 10 位用更具体的
+        assert lk.get_mfn("8518302000") == 0.0
+        # 6 位只能用 6 位的
+        assert lk.get_mfn("8518300000") == 0.034
+
+    def test_miss_returns_none(self) -> None:
+        lk = TariffLookup([])
+        lk.add_mfn("85183020", 0.0)
+        assert lk.get_mfn("9999999999") is None
+
+    def test_normalized_input(self) -> None:
+        """支持 '8518.30.20' / '8518 30 20' 输入."""
+        lk = TariffLookup([])
+        lk.add_mfn("85183020", 0.05)
+        assert lk.get_mfn("8518.30.20") == 0.05
+        assert lk.get_mfn("8518 30 20") == 0.05
