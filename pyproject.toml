@@ -48,6 +48,7 @@ dev = [
     "mypy>=1.8",
     "freezegun>=1.4",
     "respx>=0.21",
+    "pypdf>=4.0",  # PDF 内容验证
 ]
 notebook = [
     "jupyter>=1.0",
