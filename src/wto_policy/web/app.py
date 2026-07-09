@@ -13,6 +13,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -346,10 +347,35 @@ def _render_decision_card(card: DecisionCard) -> None:
             if s.action_url:
                 st.caption(f"🔗 行动: {s.action_url}")
 
-    # 来源
-    with st.expander(f"🔗 数据来源 ({len(card.sources)} 条)"):
-        for src in card.sources:
-            st.markdown(f"- {src}")
+    # 数据来源
+        with st.expander(f"🔗 数据来源 ({len(card.sources)} 条)"):
+            for src in card.sources:
+                st.markdown(f"- {src}")
+
+        # PDF 导出
+        st.markdown("---")
+        c1, c2 = st.columns([1, 3])
+        with c1:
+            if st.button("📄 下载 PDF 报告", type="primary", use_container_width=True):
+                try:
+                    from wto_policy.export.pdf import generate_decision_card_pdf
+                    pdf_bytes = generate_decision_card_pdf(card)
+                    st.download_button(
+                        label="⬇️ 保存 PDF",
+                        data=pdf_bytes,
+                        file_name=f"decision_{card.hs_code}_{datetime.now().strftime('%Y%m%d')}.pdf",
+                        mime="application/pdf",
+                        use_container_width=True,
+                    )
+                except ImportError:
+                    st.error("请先 `pip install reportlab`")
+                except Exception as e:
+                    st.error(f"PDF 生成失败: {e}")
+        with c2:
+            st.caption(
+                "📄 PDF 含完整决策卡 + 法规依据链接 + 风险表 + 行动建议 + 免责声明。"
+                "适合发给报关行/客户。"
+            )
 
 
 def _render_chat_panel() -> None:

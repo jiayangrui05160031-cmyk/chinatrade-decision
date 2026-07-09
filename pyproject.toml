@@ -35,7 +35,8 @@ dependencies = [
     "tenacity>=8.2",
     "rich>=13.7",
     "click>=8.1",
-]
+    "reportlab>=4.0",  # PDF 导出 (决策卡)
+]  # fmt: skip
 
 [project.optional-dependencies]
 dev = [
