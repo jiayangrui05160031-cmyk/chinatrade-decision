@@ -1,4 +1,4 @@
-# 🌐 WTO 跨境政策决策支持 (AI Agent)
+# 🌐 WTO 跨境政策决策支持 
 
 > **给中国制造业出口企业的"中美贸易"决策支持工具**  
 > 查 HS 编码 → 算关税 → 拉最新政策 → 出决策卡 → 告诉你"该不该接这单"
@@ -110,7 +110,7 @@ cp .env.example .env
 
 | Provider | 申请地址 | 推荐场景 | 一句话 |
 |----------|----------|----------|--------|
-| **MiniMax** 🏆 | [api.minimaxi.com](https://api.minimaxi.com/) | **国内首选** | 默认, 稳定, 便宜 |
+| **MiniMax** | [api.minimaxi.com](https://api.minimaxi.com/) | **国内首选** | 默认, 稳定, 便宜 |
 | **OpenAI** | [platform.openai.com](https://platform.openai.com/) | 海外 | set `provider=openai` |
 | **DeepSeek** | [platform.deepseek.com](https://platform.deepseek.com/) | **性价比之王** | 便宜, 国产, 强 |
 | **Qwen (通义)** | [aliyun.com](https://help.aliyun.com/zh/model-studio/getting-started/models) | 阿里云用户 | dashscope API |
