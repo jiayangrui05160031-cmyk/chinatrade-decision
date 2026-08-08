@@ -6,16 +6,22 @@ on:
     - cron: "0 */6 * * *"
   workflow_dispatch:  # 手动触发
 
+# 防止手动触发和定时任务同时写同一个 SQLite 快照
+concurrency:
+  group: refresh-policy-${{ github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write   # 允许 commit/push 数据
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
           cache: pip
@@ -24,22 +30,36 @@ jobs:
         run: pip install -e .
 
       - name: Update policy cache
-        env:
-          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+        id: update
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p data/cache
-          wto-update
+          wto-update --json > update-summary.json
+          cat update-summary.json
           wto-update --list
 
+          new_items=$(python -c 'import json; print(json.load(open("update-summary.json", encoding="utf-8"))["total_new"])')
+          total_fetched=$(python -c 'import json; print(json.load(open("update-summary.json", encoding="utf-8"))["total_fetched"])')
+          echo "new_items=$new_items" >> "$GITHUB_OUTPUT"
+          if [[ "$total_fetched" == "0" ]]; then
+            echo "::warning::All policy sources returned zero items"
+          fi
+
       - name: Commit & push
+        if: steps.update.outputs.new_items != '0'
+        shell: bash
         run: |
+          set -euo pipefail
+          test -s data/cache/policies.db
           git config user.name "github-actions[bot]"
-          git config user.email "[email protected]"
-          git add data/cache/policies.db
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- data/cache/policies.db
           # 只有当 DB 有变化时才 commit
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
             git commit -m "chore(data): refresh policy cache [skip ci]"
+            git pull --rebase origin "${GITHUB_REF_NAME}"
             git push
           fi

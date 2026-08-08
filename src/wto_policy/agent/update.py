@@ -11,6 +11,7 @@
 
 from __future__ import annotations
 
+import json
 import sys
 from datetime import UTC, datetime
 
@@ -77,7 +78,7 @@ def run_update(
         summary["total_new"] += new
         summary["total_fetched"] += len(items)
 
-        status = "ok" if items is not None else "error"
+        status = "ok" if items else "empty"
         record_crawl(
             source=source, query=query,
             new_items=new, total_items=len(items),
@@ -116,7 +117,15 @@ def main() -> None:
         help="只跑指定源 (可多次)",
     )
     p.add_argument("--list", action="store_true", help="只显示当前缓存统计")
+    p.add_argument(
+        "--json",
+        action="store_true",
+        help="将更新摘要以 JSON 输出到 stdout（普通日志写入 stderr）",
+    )
     args = p.parse_args()
+
+    if args.list and args.json:
+        p.error("--list and --json cannot be used together")
 
     if args.list:
         init_schema()
@@ -131,7 +140,10 @@ def main() -> None:
         console.print(table)
         return
 
-    run_update(sources=args.source, query=args.query)
+    console = Console(file=sys.stderr) if args.json else None
+    summary = run_update(sources=args.source, query=args.query, console=console)
+    if args.json:
+        print(json.dumps(summary, ensure_ascii=False))
     sys.exit(0)
 
 

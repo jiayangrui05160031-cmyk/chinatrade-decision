@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,8 @@ name = "wto-policy-support"
 version = "0.1.0"
 description = "中国制造业出口企业决策支持:HS编码 × 海关税则 × 政策态度"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 authors = [
     { name = "jiaya" },
@@ -16,7 +17,6 @@ keywords = ["wto", "tariff", "hs-code", "trade", "policy", "e-commerce", "cross-
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Financial and Insurance Industry",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.11",
     "Topic :: Office/Business :: Financial :: Investment",
 ]
