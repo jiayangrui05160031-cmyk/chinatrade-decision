@@ -9,6 +9,8 @@ import pytest
 
 from wto_policy.agent.policy_fetcher import (
     PolicyItem,
+    _parse_mofcom_page,
+    _parse_ustr_page,
     search_policy,
     to_dict,
 )
@@ -21,13 +23,45 @@ class TestOfflineBasic:
                 title="USTR modifies Section 301",
                 url="https://ustr.gov/x",
                 published=__import__("datetime").datetime.now(__import__("datetime").UTC),
-                source="ustr.gov",
+                source="ustr",
                 summary="modifies",
             ),
         ]
         d = to_dict(items)
         assert d[0]["title"] == "USTR modifies Section 301"
-        assert d[0]["source"] == "ustr.gov"
+        assert d[0]["source"] == "ustr"
+
+    def test_parse_ustr_listing(self) -> None:
+        html = """
+        <div class="views-row">
+          <time datetime="2026-08-07T12:00:00Z">2026-08-07</time>
+          <a href="/about/press-office/press-releases/2026/example">Trade update</a>
+        </div>
+        """
+        items = _parse_ustr_page(html, base_url="https://ustr.gov/news", limit=10)
+
+        assert len(items) == 1
+        assert items[0].source == "ustr"
+        assert items[0].url == "https://ustr.gov/about/press-office/press-releases/2026/example"
+
+    def test_parse_mofcom_listing(self) -> None:
+        html = """
+        <ul><li>
+          <em>【对外贸易】</em>
+          <a href="/zcfb/zc/art/2026/example.html" title="出口政策更新">政策</a>
+          <span>2026-08-05</span>
+        </li></ul>
+        """
+        items = _parse_mofcom_page(
+            html,
+            base_url="https://www.mofcom.gov.cn/zcfb/index.html",
+            limit=10,
+        )
+
+        assert len(items) == 1
+        assert items[0].source == "mofcom"
+        assert items[0].title == "出口政策更新"
+        assert items[0].url == "https://www.mofcom.gov.cn/zcfb/zc/art/2026/example.html"
 
 
 @pytest.mark.network

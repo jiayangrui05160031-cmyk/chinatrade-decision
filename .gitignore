@@ -65,6 +65,8 @@ data/processed/
 data/cache/*.db
 data/cache/*.sqlite
 data/cache/*.sqlite3
+# GitHub Actions 定时更新并提交的公开政策快照是唯一例外
+!data/cache/policies.db
 
 # 用户上传的企业画像
 data/uploads/

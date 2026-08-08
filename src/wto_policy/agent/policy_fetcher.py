@@ -2,19 +2,20 @@
 
 策略:
 - 离线优先: 失败时返回缓存/空结果, Agent 不崩
-- 真实抓取: 公开 API + RSS, 都有 retry
-- 数据带 source_url + crawled_at
+- 真实抓取: Federal Register API + USTR/商务部官方列表页
+- 单源失败返回空列表, 不阻塞其他来源
+- 数据带官方 URL 与发布时间
 - 用 VCR.py 录制 fixture, 测试不真打网络
 """
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from email.utils import parsedate_to_datetime
+from urllib.parse import urljoin
 
 import httpx
+from bs4 import BeautifulSoup
 
 
 @dataclass
@@ -29,36 +30,91 @@ class PolicyItem:
     raw: str | None = None
 
 
-def _parse_rss_date(s: str) -> datetime:
-    """RSS pubDate -> datetime."""
-    try:
-        return parsedate_to_datetime(s).astimezone(UTC)
-    except Exception:
-        return datetime.now(UTC)
+def _parse_ustr_page(html: str, *, base_url: str, limit: int) -> list[PolicyItem]:
+    """Parse the official USTR press-release listing."""
+    soup = BeautifulSoup(html, "html.parser")
+    items: list[PolicyItem] = []
+    for row in soup.select(".views-row"):
+        time_element = row.select_one("time[datetime]")
+        link = row.select_one('a[href*="/press-releases/"]')
+        if time_element is None or link is None:
+            continue
+        try:
+            published = datetime.fromisoformat(
+                time_element.get("datetime", "").replace("Z", "+00:00")
+            ).astimezone(UTC)
+        except ValueError:
+            continue
+        title = link.get_text(" ", strip=True)
+        href = link.get("href", "")
+        if not title or not href:
+            continue
+        items.append(PolicyItem(
+            title=title,
+            url=urljoin(base_url, href),
+            published=published,
+            source="ustr",
+        ))
+        if len(items) >= limit:
+            break
+    return items
+
+
+def _parse_mofcom_page(html: str, *, base_url: str, limit: int) -> list[PolicyItem]:
+    """Parse the official MOFCOM policy listing."""
+    soup = BeautifulSoup(html, "html.parser")
+    items: list[PolicyItem] = []
+    seen_urls: set[str] = set()
+    for link in soup.select('a[href*="/art/"]'):
+        href = link.get("href", "")
+        if "/zcfb/" not in href:
+            continue
+        row = link.find_parent("li")
+        date_element = row.find("span") if row else None
+        if date_element is None:
+            continue
+        try:
+            published = datetime.fromisoformat(
+                date_element.get_text(strip=True)
+            ).replace(tzinfo=UTC)
+        except ValueError:
+            continue
+        title = link.get("title", "").strip() or link.get_text(" ", strip=True)
+        url = urljoin(base_url, href)
+        if url.startswith("http://www.mofcom.gov.cn/"):
+            url = url.replace("http://", "https://", 1)
+        if not title or url in seen_urls:
+            continue
+        category = row.find("em")
+        items.append(PolicyItem(
+            title=title,
+            url=url,
+            published=published,
+            source="mofcom",
+            summary=category.get_text(" ", strip=True) if category else None,
+        ))
+        seen_urls.add(url)
+        if len(items) >= limit:
+            break
+    return items
 
 
 def fetch_ustr_press(*, limit: int = 10, timeout: float = 15.0) -> list[PolicyItem]:
-    """USTR 办公室新闻稿 (RSS).
+    """USTR 办公室新闻稿 (官方列表页).
 
-    URL: https://ustr.gov/about-us/policy-offices/press-office/press-releases/feed
+    URL: https://ustr.gov/about-us/policy-offices/press-office/press-releases
     """
-    url = "https://ustr.gov/about-us/policy-offices/press-office/press-releases/feed"
+    url = "https://ustr.gov/about-us/policy-offices/press-office/press-releases"
     try:
-        r = httpx.get(url, timeout=timeout, follow_redirects=True)
+        r = httpx.get(
+            url,
+            timeout=timeout,
+            follow_redirects=True,
+            headers={"User-Agent": "wto-policy-support/0.1"},
+        )
         if r.status_code != 200:
             return []
-        root = ET.fromstring(r.text)
-        items: list[PolicyItem] = []
-        for item in root.findall(".//item")[:limit]:
-            title = item.findtext("title", "").strip()
-            link = item.findtext("link", "").strip()
-            pub = item.findtext("pubDate", "")
-            desc = item.findtext("description", "").strip()
-            items.append(PolicyItem(
-                title=title, url=link, published=_parse_rss_date(pub),
-                source="ustr.gov", summary=desc,
-            ))
-        return items
+        return _parse_ustr_page(r.text, base_url=str(r.url), limit=limit)
     except Exception:
         return []
 
@@ -94,7 +150,7 @@ def fetch_federal_register(
                 published=datetime.fromisoformat(
                     doc.get("publication_date", "")
                 ).replace(tzinfo=UTC),
-                source="federalregister.gov",
+                source="federal_register",
                 summary=doc.get("abstract", "")[:500] or None,
             ))
         return items
@@ -103,27 +159,21 @@ def fetch_federal_register(
 
 
 def fetch_mofcom_rss(*, limit: int = 10, timeout: float = 15.0) -> list[PolicyItem]:
-    """商务部新闻 (RSS 镜像, 可能因 GFW 不稳定).
+    """商务部政策发布列表 (函数名为向后兼容保留).
 
-    URL: http://www.mofcom.gov.cn/rss/
+    URL: https://www.mofcom.gov.cn/zcfb/index.html
     """
-    url = "http://www.mofcom.gov.cn/rss/eywfb.xml"  # 经贸与外汇
+    url = "https://www.mofcom.gov.cn/zcfb/index.html"
     try:
-        r = httpx.get(url, timeout=timeout, follow_redirects=True)
+        r = httpx.get(
+            url,
+            timeout=timeout,
+            follow_redirects=True,
+            headers={"User-Agent": "wto-policy-support/0.1"},
+        )
         if r.status_code != 200:
             return []
-        root = ET.fromstring(r.text)
-        items: list[PolicyItem] = []
-        for item in root.findall(".//item")[:limit]:
-            title = item.findtext("title", "").strip()
-            link = item.findtext("link", "").strip()
-            pub = item.findtext("pubDate", "")
-            desc = item.findtext("description", "").strip()
-            items.append(PolicyItem(
-                title=title, url=link, published=_parse_rss_date(pub),
-                source="mofcom.gov.cn", summary=desc,
-            ))
-        return items
+        return _parse_mofcom_page(r.text, base_url=str(r.url), limit=limit)
     except Exception:
         return []
 
