@@ -1,4 +1,6 @@
-# 🌐 WTO 跨境政策决策支持 
+# 🌐 WTO 跨境政策决策支持
+
+<p align="right"><strong>中文</strong> | <a href="README_EN.md">English</a></p>
 
 > **给中国制造业出口企业的"中美贸易"决策支持工具**  
 > 查 HS 编码 → 算关税 → 拉最新政策 → 出决策卡 → 告诉你"该不该接这单"
